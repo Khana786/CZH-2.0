@@ -1,0 +1,34 @@
+# Private data and credentials
+PrivateData/
+**/PrivateData/
+*admin-auth*
+*member-registry*
+.env
+.env.*
+*secret*
+*credential*
+*token*
+*.pem
+*.key
+
+# Backups and local data
+*.bak
+*.backup*
+*.tar
+*.tar.gz
+*.tar.gz.gpg
+*.gpg
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# AI models and build artifacts
+*.gguf
+llama.cpp/
+build/
+__pycache__/
+*.pyc
+
+# Local-only configuration
+platform.conf
