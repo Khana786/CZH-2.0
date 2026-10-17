@@ -38,6 +38,19 @@ LESSONS = [
     ("BACKUPS & LOGS", "Protect encrypted backups and avoid exposing passwords or access tokens."),
 ]
 
+LESSON_CONTENT = {
+    1: {"overview": ["The shell is a text interface to your operating system.", "Termux provides a Linux-like environment on Android.", "Every command you type is parsed by the shell before execution."], "concepts": ["pwd - print working directory", "ls - list directory contents", "cd - change directory", "whoami - show current user name", "man <cmd> - read the manual for a command"], "practice": ["Run: pwd", "Run: ls", "Run: whoami", "Run: mkdir czh_test && cd czh_test && pwd"], "safety": "Read-only commands are safe. Never run commands from untrusted sources."},
+    2: {"overview": ["Every file and folder has a path in the filesystem.", "Permissions decide who can read, write, or execute a file."], "concepts": ["ls -l - show file permissions", "chmod 600 file - owner read/write only", "chmod 700 dir - owner full access only", "~ is home; . is current; .. is parent directory"], "practice": ["Run: ls -l", "Run: touch note.txt && ls -l note.txt", "Run: chmod 600 note.txt && ls -l note.txt"], "safety": "Avoid chmod 777. Never loosen system file permissions unnecessarily."},
+    3: {"overview": ["Networks exchange packets between devices.", "Every device has an IP address; every service uses a port."], "concepts": ["IPv4 example: 192.168.1.1", "IPv6 example: ::1", "DNS translates names to IP addresses", "Common ports: 80 HTTP, 443 HTTPS, 22 SSH"], "practice": ["Run: czh-tools then choose DNS lookup", "Inspect a domain you own or have permission to test"], "safety": "Do not scan networks you do not own or lack permission for."},
+    4: {"overview": ["HTTPS protects traffic using TLS encryption.", "Certificates prove the identity of the server."], "concepts": ["TLS - encrypted transport layer", "Certificate - signed proof of identity", "Issuer - Certificate Authority (CA)", "Expiration - certificate validity date"], "practice": ["Run: czh-tools then choose HTTPS certificate information", "Inspect issuer and expiration for a trusted site"], "safety": "Never bypass certificate warnings for untrusted sites."},
+    5: {"overview": ["A hash is a fixed-size fingerprint of data.", "SHA-256 produces a 256-bit value from any input."], "concepts": ["Same input produces the same hash", "Different input produces a different hash (with high probability)", "A hash is one-way and is not encryption"], "practice": ["Run: czh-tools then choose File SHA-256 hash", "Compare result with a trusted published checksum"], "safety": "A matching hash only proves integrity if the reference checksum is trusted."},
+    6: {"overview": ["Weak or reused passwords are a top cause of account compromise.", "Multifactor authentication (MFA) adds a second barrier."], "concepts": ["Use a unique password per account", "Store passwords in a password manager", "Enable MFA wherever possible", "Never share one-time codes"], "practice": ["List accounts where you reuse passwords", "Enable MFA on at least one account today"], "safety": "Never share passwords or one-time verification codes."},
+    7: {"overview": ["Phishing tricks people into giving up credentials or data.", "Attackers mimic trusted senders and links."], "concepts": ["Check the sender domain carefully", "Hover over links before clicking", "Be suspicious of urgency and fear tactics", "Verify via a separate channel"], "practice": ["Open suspicious emails only in a safe analysis environment", "Do not enter credentials on unfamiliar pages"], "safety": "Never enter credentials on pages you did not navigate to yourself."},
+    8: {"overview": ["Devices stay safer when kept updated and minimal.", "App permissions control what apps can access."], "concepts": ["Keep Android and apps updated", "Review permissions regularly", "Install only from trusted sources", "Uninstall apps you no longer use"], "practice": ["Open Android settings and review app permissions", "Uninstall at least one unused app"], "safety": "Review permissions carefully before granting access."},
+    9: {"overview": ["HTTP security headers tell browsers how to protect users.", "They add defense against common web attacks."], "concepts": ["Strict-Transport-Security (HSTS) - force HTTPS", "Content-Security-Policy (CSP) - restrict sources", "X-Frame-Options - prevent clickjacking", "X-Content-Type-Options - stop MIME sniffing"], "practice": ["Run: czh-tools then choose HTTPS security headers", "Inspect headers for a site you own"], "safety": "A missing header alone does not prove vulnerability."},
+    10: {"overview": ["Backups protect data against loss and ransomware.", "Logs help detect and investigate issues."], "concepts": ["Encrypt sensitive backups", "Test restoring backups", "Keep logs free of passwords and tokens", "Rotate and expire old logs"], "practice": ["Create a small encrypted archive of a test folder", "Restore it to a separate directory"], "safety": "Keep private keys and tokens out of logs and backups that leave the device."},
+}
+
 
 def line(char="━", color=CYAN):
     print(color + char * WIDTH + R)
@@ -166,6 +179,25 @@ def open_lesson(number, completed):
 
     print(f"\n  {CYAN}FIELD NOTES{R}")
     print(f"  {GRAY}{extra[number]}{R}")
+
+    content = LESSON_CONTENT.get(number, {})
+    if content:
+        if "overview" in content:
+            print(f"\n  {CYAN}OVERVIEW{R}")
+            for item in content["overview"]:
+                print(f"  {WHITE}- {item}{R}")
+        if "concepts" in content:
+            print(f"\n  {CYAN}KEY CONCEPTS{R}")
+            for item in content["concepts"]:
+                print(f"  {WHITE}- {item}{R}")
+        if "practice" in content:
+            print(f"\n  {CYAN}PRACTICE{R}")
+            for item in content["practice"]:
+                print(f"  {WHITE}  {item}{R}")
+        if "safety" in content:
+            print(f"\n  {YELLOW}SAFETY NOTE{R}")
+            print(f"  {GRAY}{content['safety']}{R}")
+
     print()
     line("─", MAGENTA)
 
