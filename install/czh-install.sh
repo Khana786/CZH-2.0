@@ -22,6 +22,7 @@ fi
 for required in core/czh-hub.sh core/czh-core.sh core/czh-monitor.sh \
                 core/czh-doctor.sh core/czh-integrity.py \
                 catalog/tools/czh-tools.py catalog/labs/czh-labs.py \
+                catalog/courses/czh-course.py \
                 catalog/labs/README.md config/platform.conf; do
     if [ ! -f "$SOURCE_ROOT/$required" ]; then
         echo "ERROR: Required release file missing: $required"
@@ -59,6 +60,9 @@ cp -R "$SOURCE_ROOT/." "$STAGING/"
 # Do not copy Git metadata, development backups, or local-only data.
 rm -rf "$STAGING/.git"
 find "$STAGING" -type f -name '.czh-*.bak' -delete
+find "$STAGING" -type f -name '*.bak*' -delete
+find "$STAGING" -type f -name '*.bak' -delete
+find "$STAGING" -type d -name '__pycache__' -prune -exec rm -rf {} +
 
 chmod +x "$STAGING/core/czh-hub.sh" \
          "$STAGING/core/czh-core.sh" \
@@ -70,6 +74,10 @@ bash -n "$STAGING/core/czh-core.sh"
 bash -n "$STAGING/core/czh-monitor.sh"
 python -m py_compile "$STAGING/catalog/labs/czh-labs.py"
 python -m py_compile "$STAGING/catalog/tools/czh-tools.py"
+
+# Second cleanup pass: remove any pycache/backups created by the checks above.
+find "$STAGING" -type d -name '__pycache__' -prune -exec rm -rf {} +
+find "$STAGING" -type f -name '*.bak*' -delete
 
 if [ -e "$DEST" ]; then
     echo "ERROR: Destination appeared during installation; refusing to overwrite."
