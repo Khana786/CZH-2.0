@@ -51,6 +51,19 @@ LESSON_CONTENT = {
     10: {"overview": ["Backups protect data against loss and ransomware.", "Logs help detect and investigate issues."], "concepts": ["Encrypt sensitive backups", "Test restoring backups", "Keep logs free of passwords and tokens", "Rotate and expire old logs"], "practice": ["Create a small encrypted archive of a test folder", "Restore it to a separate directory"], "safety": "Keep private keys and tokens out of logs and backups that leave the device."},
 }
 
+QUIZ = {
+    1: {"q": "Which command prints the current working directory?", "choices": ["pwd", "cd", "ls"], "answer": "pwd", "why": "pwd prints the working directory."},
+    2: {"q": "Which mode gives only the owner read+write?", "choices": ["777", "644", "600"], "answer": "600", "why": "600 = owner read+write, no access for others."},
+    3: {"q": "Which protocol resolves domain names to IP addresses?", "choices": ["DNS", "HTTP", "FTP"], "answer": "DNS", "why": "DNS maps hostnames to IP addresses."},
+    4: {"q": "TLS primarily provides:", "choices": ["Encryption + authentication", "Compression", "Routing"], "answer": "Encryption + authentication", "why": "TLS encrypts traffic and authenticates the server."},
+    5: {"q": "A SHA-256 hash is best described as:", "choices": ["Reversible encryption", "Fixed-size fingerprint", "A password"], "answer": "Fixed-size fingerprint", "why": "Hashes are one-way fingerprints, not encryption."},
+    6: {"q": "Which practice is best for account security?", "choices": ["Reuse one strong password", "Unique password per site + MFA", "Write on paper"], "answer": "Unique password per site + MFA", "why": "Unique passwords + MFA limit the impact of any single breach."},
+    7: {"q": "Best first step for a suspicious email?", "choices": ["Click the link to check", "Reply for confirmation", "Verify sender via separate channel"], "answer": "Verify sender via separate channel", "why": "Never trust the suspicious channel itself."},
+    8: {"q": "Which device habit reduces risk most?", "choices": ["Keep apps updated", "Install from any source", "Grant all permissions"], "answer": "Keep apps updated", "why": "Updates patch known vulnerabilities."},
+    9: {"q": "Which header forces HTTPS?", "choices": ["HSTS", "CSP", "X-Frame-Options"], "answer": "HSTS", "why": "Strict-Transport-Security tells browsers to require HTTPS."},
+    10: {"q": "A trustworthy backup must be:", "choices": ["Tested by restoring", "Never checked", "Unencrypted"], "answer": "Tested by restoring", "why": "An untested backup is not a reliable backup."},
+}
+
 
 def line(char="━", color=CYAN):
     print(color + char * WIDTH + R)
@@ -200,6 +213,25 @@ def open_lesson(number, completed):
 
     print()
     line("─", MAGENTA)
+
+    quiz = QUIZ.get(number)
+    if quiz and str(number) not in completed:
+        print(f"  {CYAN}QUICK CHECK{R}")
+        print(f"  {WHITE}{quiz['q']}{R}")
+        for i, c in enumerate(quiz["choices"], 1):
+            print(f"    {i}) {c}")
+        try:
+            pick = input(f"  {YELLOW}Your answer [1-{len(quiz['choices'])}]: {R}").strip()
+            idx = int(pick) - 1
+            if 0 <= idx < len(quiz["choices"]) and quiz["choices"][idx] == quiz["answer"]:
+                print(f"  {GREEN}✔ Correct.{R}")
+            else:
+                print(f"  {YELLOW}✗ Not quite. Correct: {quiz['answer']}{R}")
+            print(f"  {GRAY}{quiz['why']}{R}")
+        except (ValueError, EOFError):
+            print(f"  {GRAY}Quiz skipped.{R}")
+        print()
+        line("─", MAGENTA)
 
     if str(number) in completed:
         print(f"  {GREEN}✔ This module is already marked complete.{R}")
