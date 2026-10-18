@@ -1,6 +1,14 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 KEY_FILE="$HOME/CZH/PrivateData/darkweb.key"
+DARKLAB_LOG="$HOME/CZH/PrivateData/darklab_activity.log"
+touch "$DARKLAB_LOG"
+chmod 600 "$DARKLAB_LOG"
+
+log_action() {
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" >> "$DARKLAB_LOG"
+}
+
 clear
 
 R='\033[91m'
@@ -78,8 +86,34 @@ read -r -s -p "$(echo -e "${R}  ▶ ENTER DARK LAB AUTHORIZATION KEY: ${NC}")" i
 echo ""
 
 MASTER_KEY=$(cat "$KEY_FILE")
+GUEST_FILE="$HOME/CZH/PrivateData/darklab_guests.txt"
+CURRENT_TIME=$(date +%s)
+ACCESS_GRANTED=0
 
-if [[ "$input_key" != "$MASTER_KEY" ]]; then
+# 1. Check Master Key (Owner)
+if [[ "$input_key" == "$MASTER_KEY" ]]; then
+    ACCESS_GRANTED=1
+else
+    # 2. Check Guest Keys (If file exists)
+    if [ -f "$GUEST_FILE" ]; then
+        while IFS=":" read -r g_token g_expiry; do
+            if [[ "$input_key" == "$g_token" ]]; then
+                if [ "$CURRENT_TIME" -lt "$g_expiry" ]; then
+                    ACCESS_GRANTED=2
+                    TIME_LEFT=$((g_expiry - CURRENT_TIME))
+                    echo -e "${G}  [i] Guest Access Valid. Time remaining: ${TIME_LEFT}s${NC}"
+                else
+                    echo -e "${R}  [✗] This guest token has EXPIRED.${NC}"
+                fi
+            fi
+        done < "$GUEST_FILE"
+    fi
+fi
+
+USER_ROLE="GUEST"
+if [ "$ACCESS_GRANTED" -eq 1 ]; then USER_ROLE="ADMIN"; fi
+
+if [ "$ACCESS_GRANTED" -eq 0 ]; then
     echo ""
     echo -e "${BG_R}${W}  [✗] ACCESS DENIED. SELF-DESTRUCT INITIATED...  ${NC}"
     sleep 1
@@ -92,6 +126,8 @@ echo -e "${G}  [✓] ACCESS GRANTED. WELCOME TO THE CZH DARK LAB.${NC}"
 sleep 1
 clear
 
+log_action "Guest accessed the Dark Lab Menu."
+
 while true; do
     echo -e "${R}┌──────────────────────────────────────────────────────────┐${NC}"
     echo -e "${R}│${NC} ${C}   ☠ CZH DARK LAB // GREY HAT OPERATIONS  ☠${NC}             ${R}│${NC}"
@@ -99,14 +135,25 @@ while true; do
     echo -e "${R}│${NC} ${Y}[1]${W} INSTALL WEAPONS (nmap, sqlmap, hydra)${NC}                ${R}│${NC}"
     echo -e "${R}│${NC} ${Y}[2]${W} LAUNCH BLACK-SHELL (Testing Environment)${NC}             ${R}│${NC}"
     echo -e "${R}│${NC} ${Y}[3]${W} SYSTEM INFO (Check Permissions & Tools)${NC}              ${R}│${NC}"
+    if [ "$USER_ROLE" == "ADMIN" ]; then
+    echo -e "${R}│${NC} ${C}[4]${W} VIEW ACTIVITY LOGS (Admin Only)${NC}                      ${R}│${NC}"
+fi
     echo -e "${R}│${NC} ${R}[0]${W} ABORT & EXIT LAB${NC}                                     ${R}│${NC}"
     echo -e "${R}└──────────────────────────────────────────────────────────┘${NC}"
     echo ""
     read -r -p "$(echo -e "${C}  DARK LAB ➜ ${NC}")" choice
 
     case "$choice" in
-        1) echo -e "${Y}\n  [*] ARMING WEAPONS...${NC}"; pkg install nmap sqlmap hydra -y; echo -e "${G}  [✓] WEAPONS READY.${NC}" ;;
-        2) echo -e "${R}\n  [!] INITIATING BLACK-SHELL...${NC}"; bash ;;
+        1) echo -e "${Y}\n  [*] ARMING WEAPONS...${NC}"; log_action "Started installing Weapons (nmap, sqlmap, hydra)"; pkg install nmap -y; echo -e "${G}  [✓] WEAPONS READY.${NC}" ;;
+        2) echo -e "${R}\n  [!] INITIATING BLACK-SHELL...${NC}"; log_action "Launched Black-Shell Environment"; bash ;;
+        4)
+            if [ "$USER_ROLE" == "ADMIN" ]; then
+                echo -e "${C}\n  [+] ACTIVITY LOGS:${NC}"
+                if [ -s "$DARKLAB_LOG" ]; then cat "$DARKLAB_LOG"; else echo "No logs yet."; fi
+            else
+                echo -e "${R}  [✗] Access Denied. Admin only.${NC}"
+            fi
+            ;;
         3) 
             echo -e "${C}\n  [+] SYSTEM DIAGNOSTICS:${NC}"
             command -v nmap >/dev/null && echo -e "${G}      [OK] nmap${NC}" || echo -e "${R}      [X] nmap missing${NC}"
