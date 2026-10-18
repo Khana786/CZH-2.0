@@ -136,6 +136,7 @@ while true; do
     echo -e "${R}│${NC} ${Y}[2]${W} LAUNCH BLACK-SHELL (Testing Environment)${NC}             ${R}│${NC}"
     echo -e "${R}│${NC} ${Y}[3]${W} SYSTEM INFO (Check Permissions & Tools)${NC}              ${R}│${NC}"
     echo -e "${R}│${NC} ${R}[5]${W} TESTING ARSENAL (Ethical Tools)${NC}                     ${R}│${NC}"
+    echo -e "${R}│${NC} ${C}[6]${W} OSINT RECON (Public Info Only)${NC}                      ${R}│${NC}"
     if [ "$USER_ROLE" == "ADMIN" ]; then
     echo -e "${R}│${NC} ${C}[4]${W} VIEW ACTIVITY LOGS (Admin Only)${NC}                      ${R}│${NC}"
 fi
@@ -184,6 +185,47 @@ fi
             echo -e "${C}\n  [+] SYSTEM DIAGNOSTICS:${NC}"
             command -v nmap >/dev/null && echo -e "${G}      [OK] nmap${NC}" || echo -e "${R}      [X] nmap missing${NC}"
             command -v sqlmap >/dev/null && echo -e "${G}      [OK] sqlmap${NC}" || echo -e "${R}      [X] sqlmap missing${NC}"
+            ;;
+        6)
+            echo -e "${C}\n  [+] OSINT RECONNAISSANCE TOOLS${NC}"
+            echo -e "${Y}  [1] Domain WHOIS${NC}"
+            echo -e "${Y}  [2] DNS Lookup${NC}"
+            echo -e "${Y}  [3] Email Breach Check (HIBP)${NC}"
+            echo -e "${Y}  [4] IP Location Lookup${NC}"
+            echo -e "${Y}  [5] Username Search (Sherlock)${NC}"
+            echo -e "${Y}  [0] Back${NC}"
+            read -r -p "  Select ➜ " osint_choice
+
+            case "$osint_choice" in
+                1)
+                    log_action "OSINT: WHOIS Lookup"
+                    read -r -p "  Enter domain: " target
+                    whois "$target" | head -n 20
+                    ;;
+                2)
+                    log_action "OSINT: DNS Lookup"
+                    read -r -p "  Enter domain: " target
+                    echo -e "\n  A Record: $(dig +short A "$target")"
+                    echo -e "  MX Record: $(dig +short MX "$target")"
+                    echo -e "  NS Record: $(dig +short NS "$target")"
+                    ;;
+                3)
+                    log_action "OSINT: HIBP Email Check"
+                    echo -e "${Y}\n  Note: HIBP check requires API key. Placeholder for now.${NC}"
+                    ;;
+                4)
+                    log_action "OSINT: IP Lookup"
+                    read -r -p "  Enter IP: " ip_target
+                    curl -s "http://ip-api.com/json/$ip_target" | python3 -m json.tool 2>/dev/null | head -n 15
+                    ;;
+                5)
+                    log_action "OSINT: Username Search"
+                    echo -e "${Y}\n  Username search requires 'sherlock' tool.${NC}"
+                    echo -e "${Y}  Install with: pip install sherlock-project${NC}"
+                    ;;
+                0) ;;
+                *) echo -e "${R}  [✗] Invalid option.${NC}" ;;
+            esac
             ;;
         0) echo -e "${R}\n  [!] DISCONNECTING. STAY ETHICAL.${NC}"; exit 0 ;;
         *) echo -e "${R}  [✗] Invalid option.${NC}" ;;
