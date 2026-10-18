@@ -135,6 +135,7 @@ while true; do
     echo -e "${R}│${NC} ${Y}[1]${W} INSTALL WEAPONS (nmap, sqlmap, hydra)${NC}                ${R}│${NC}"
     echo -e "${R}│${NC} ${Y}[2]${W} LAUNCH BLACK-SHELL (Testing Environment)${NC}             ${R}│${NC}"
     echo -e "${R}│${NC} ${Y}[3]${W} SYSTEM INFO (Check Permissions & Tools)${NC}              ${R}│${NC}"
+    echo -e "${R}│${NC} ${R}[5]${W} TESTING ARSENAL (Ethical Tools)${NC}                     ${R}│${NC}"
     if [ "$USER_ROLE" == "ADMIN" ]; then
     echo -e "${R}│${NC} ${C}[4]${W} VIEW ACTIVITY LOGS (Admin Only)${NC}                      ${R}│${NC}"
 fi
@@ -152,6 +153,31 @@ fi
                 if [ -s "$DARKLAB_LOG" ]; then cat "$DARKLAB_LOG"; else echo "No logs yet."; fi
             else
                 echo -e "${R}  [✗] Access Denied. Admin only.${NC}"
+            fi
+            ;;
+        5)
+            echo -e "${C}\n  [+] CZH ETHICAL TESTING ARSENAL${NC}"
+            echo -e "${Y}  Tools available: whois, dig, curl, wget, msfconsole${NC}"
+            echo -e "${Y}  Use only on authorized targets.${NC}"
+            read -r -p "  Enter tool name (or 'exit' to return): " tool_cmd
+            if [[ "$tool_cmd" == "exit" ]]; then
+                : # do nothing, return to menu
+            elif [[ "$tool_cmd" =~ ^(whois|dig|curl|wget|msfconsole)$ ]]; then
+                log_action "Used testing tool: $tool_cmd"
+                echo ""
+                if [ "$tool_cmd" == "msfconsole" ]; then
+                    log_action "Launched Metasploit Console (via Debian)"
+                    echo -e "${G}  [*] Booting Metasploit inside Debian...${NC}"
+                    proot-distro login debian -- msfconsole
+                    continue
+                fi
+                read -r -p "  Enter target (e.g., example.com): " target
+                if [ -n "$target" ]; then
+                    log_action "Target: $target"
+                    $tool_cmd "$target"
+                fi
+            else
+                echo -e "${R}  [✗] Tool not allowed or invalid.${NC}"
             fi
             ;;
         3) 
