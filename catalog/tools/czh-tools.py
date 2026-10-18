@@ -1,160 +1,182 @@
+#!/usr/bin/env python3
+import hashlib
 import os
-import sys
+import platform
 import socket
 import ssl
-import hashlib
-import subprocess
+import urllib.error
+import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
 
-RED = "\033[91m"
-GRN = "\033[92m"
-YEL = "\033[93m"
-BLU = "\033[94m"
-MAG = "\033[95m"
-CYN = "\033[96m"
-WHT = "\033[97m"
-RST = "\033[0m"
-
-def clear():
-    os.system('clear' if os.name == 'posix' else 'cls')
+def get_host():
+    raw = input("Domain ya hostname: ").strip()
+    if "://" in raw:
+        raw = urllib.parse.urlsplit(raw).hostname or ""
+    raw = raw.split("/")[0].split(":")[0].strip()
+    if not raw or any(c.isspace() for c in raw):
+        print("Invalid hostname.")
+        return None
+    return raw
 
 def dns_lookup():
-    host = input("\nEnter domain for DNS lookup (e.g., example.com): ").strip()
-    if not host: return
-    try:
-        print(f"\n{CYN}[+] Resolving: {host}{RST}")
-        ip = socket.gethostbyname(host)
-        print(f"{GRN}[OK]{RST} IPv4 Address: {ip}")
-    except Exception as e:
-        print(f"{RED}[FAIL]{RST} Could not resolve: {e}")
-
-def tls_info():
-    host = input("\nEnter domain for TLS check (e.g., example.com): ").strip()
-    if not host: return
-    try:
-        context = ssl.create_default_context()
-        with socket.create_connection((host, 443), timeout=5) as sock:
-            with context.wrap_socket(sock, server_hostname=host) as ssock:
-                cert = ssock.getpeercert()
-                print(f"\n{CYN}[+] TLS Info for: {host}{RST}")
-                print(f"{GRN}[OK]{RST} Protocol: {ssock.version()}")
-                print(f"{GRN}[OK]{RST} Issuer: {dict(x[0] for x in cert['issuer'])['commonName']}")
-                print(f"{GRN}[OK]{RST} Expires: {cert['notAfter']}")
-    except Exception as e:
-        print(f"{RED}[FAIL]{RST} Connection error: {e}")
-
-def security_headers():
-    url = input("\nEnter URL for headers (e.g., https://example.com): ").strip()
-    if not url: return
-    if not url.startswith("http"): url = "https://" + url
-    try:
-        req = urllib.request.Request(url, method="HEAD", headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            print(f"\n{CYN}[+] Headers for: {url}{RST}")
-            for h in ["Server", "X-Frame-Options", "Strict-Transport-Security", "Content-Security-Policy"]:
-                val = resp.headers.get(h, "Missing")
-                print(f"{GRN}[OK]{RST} {h}: {val}")
-    except Exception as e:
-        print(f"{RED}[FAIL]{RST} {e}")
-
-def file_hash():
-    path = input("\nEnter file path for SHA-256 (e.g., ~/test.txt): ").strip()
-    path = os.path.expanduser(path)
-    if not os.path.isfile(path):
-        print(f"{RED}[FAIL]{RST} File not found.")
+    host = get_host()
+    if not host:
         return
     try:
-        sha = hashlib.sha256()
-        with open(path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""): sha.update(chunk)
-        print(f"\n{CYN}[+] SHA-256 Hash for: {path}{RST}")
-        print(f"{GRN}[OK]{RST} {sha.hexdigest()}")
-    except Exception as e:
-        print(f"{RED}[FAIL]{RST} {e}")
+        results = sorted({item[4][0] for item in socket.getaddrinfo(host, None)})
+        print("\nDNS results:")
+        for ip in results:
+            print(" ", ip)
+    except (socket.gaierror, OSError) as exc:
+        print("DNS error:", exc)
+
+def tls_info():
+    host = get_host()
+    if not host:
+        return
+    try:
+        context = ssl.create_default_context()
+        with socket.create_connection((host, 443), timeout=8) as sock:
+            with context.wrap_socket(sock, server_hostname=host) as tls:
+                cert = tls.getpeercert()
+                print("TLS version:", tls.version())
+                print("Cipher:", tls.cipher()[0] if tls.cipher() else "Unknown")
+                print("Certificate subject:", cert.get("subject", "Unknown"))
+                print("Certificate issuer:", cert.get("issuer", "Unknown"))
+                expiry = cert.get("notAfter")
+                print("Certificate expires:", expiry or "Unknown")
+                if expiry:
+                    exp = datetime.strptime(
+                        expiry, "%b %d %H:%M:%S %Y %Z"
+                    ).replace(tzinfo=timezone.utc)
+                    days = (exp - datetime.now(timezone.utc)).days
+                    print("Days until expiry:", days)
+    except (OSError, ssl.SSLError, ValueError) as exc:
+        print("TLS check failed:", exc)
+
+def security_headers():
+    raw = input("Full HTTPS URL (only check sites you are allowed to test): ").strip()
+    parsed = urllib.parse.urlsplit(raw)
+    if parsed.scheme != "https" or not parsed.hostname:
+        print("Please provide a valid HTTPS URL.")
+        return
+    request = urllib.request.Request(
+        raw, method="GET", headers={"User-Agent": "CZH-Ethical-Lab/1.0"}
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            print("HTTP status:", response.status)
+            print("Final URL:", response.geturl())
+            headers = response.headers
+            wanted = [
+                "Strict-Transport-Security",
+                "Content-Security-Policy",
+                "X-Content-Type-Options",
+                "X-Frame-Options",
+                "Referrer-Policy",
+                "Permissions-Policy",
+            ]
+            print("\nSecurity header review:")
+            for name in wanted:
+                print(f"{name}: {headers.get(name, 'NOT PRESENT')}")
+            print("\nNote: missing headers alone do not prove a vulnerability.")
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+        print("HTTP check failed:", exc)
+
+def file_hash():
+    raw = input("File path: ").strip()
+    path = Path(os.path.expanduser(raw))
+    if not path.is_file():
+        print("File not found.")
+        return
+    digest = hashlib.sha256()
+    try:
+        with path.open("rb") as file:
+            for chunk in iter(lambda: file.read(1024 * 1024), b""):
+                digest.update(chunk)
+        print("File:", path)
+        print("SHA-256:", digest.hexdigest())
+    except OSError as exc:
+        print("File read error:", exc)
 
 def system_info():
-    print(f"\n{CYN}[+] System Environment Info{RST}")
-    print(f"{GRN}[OK]{RST} Platform: {sys.platform}")
-    print(f"{GRN}[OK]{RST} Python: {sys.version.split()[0]}")
-    print(f"{GRN}[OK]{RST} Home: {os.path.expanduser('~')}")
+    print("Platform:", platform.platform())
+    print("Python:", platform.python_version())
+    print("Machine:", platform.machine())
+    print("Termux PREFIX:", os.environ.get("PREFIX", "Not detected"))
+    print("Home directory:", Path.home())
+    print("This option does not collect or upload device information.")
 
 def network_health():
-    print(f"\n{CYN}[+] Network Health Inspector{RST}")
+    import socket
+    import time
+    print("\n--- Network Health Inspector (read-only) ---")
     try:
-        ip = socket.gethostbyname(socket.gethostname())
-        print(f"{GRN}[OK]{RST} Local IP: {ip}")
-    except:
-        print(f"{YEL}[!]{RST} Local IP hidden")
-    try:
-        socket.gethostbyname("example.com")
-        print(f"{GRN}[OK]{RST} DNS Reachability: ONLINE")
-    except:
-        print(f"{RED}[FAIL]{RST} DNS Reachability: OFFLINE")
-
-def whois_lookup():
-    dom = input("\nEnter domain for WHOIS: ").strip()
-    if not dom: return
-    print(f"\n{CYN}[+] WHOIS Lookup: {dom}{RST}")
-    try:
-        res = subprocess.run(["whois", dom], capture_output=True, text=True, timeout=10)
-        print(res.stdout[:1000] + "\n... (truncated)")
-    except FileNotFoundError:
-        print(f"{RED}[FAIL]{RST} 'whois' not installed. Run: pkg install whois")
+        hostname = socket.gethostname()
+        print(f"Local hostname: {hostname}")
     except Exception as e:
-        print(f"{RED}[FAIL]{RST} {e}")
+        print(f"Could not get hostname: {e}")
 
-def ping_host():
-    host = input("\nEnter host to ping: ").strip()
-    if not host: return
-    print(f"\n{CYN}[+] Pinging: {host}{RST}")
     try:
-        res = subprocess.run(["ping", "-c", "4", host], capture_output=True, text=True, timeout=15)
-        if res.returncode == 0:
-            print(res.stdout)
-        else:
-            print(f"{RED}[FAIL]{RST} Host unreachable.")
+        local_ip = socket.gethostbyname(socket.gethostname())
+        print(f"Local IP address: {local_ip}")
     except Exception as e:
-        print(f"{RED}[FAIL]{RST} {e}")
+        print(f"Could not resolve local IP: {e}")
+
+    target = "example.com"
+    print(f"\nTesting DNS resolution for: {target}")
+    try:
+        start = time.time()
+        ip = socket.gethostbyname(target)
+        elapsed = (time.time() - start) * 1000
+        print(f"  [OK] Resolved to {ip} in {elapsed:.1f} ms")
+    except Exception as e:
+        print(f"  [FAIL] DNS resolution failed: {e}")
+
+    print("\nNote: This is a basic local connectivity check.")
+    print("It does not scan networks or test remote ports.")
 
 def main():
     while True:
-        clear()
-        print(f"""{RED}╔═══════════════════════════════════════════╗
-║{GRN}  ██████╗███████╗██╗  ██╗{RED}                  ║
-║{GRN} ██╔════╝╚══███╔╝██║  ██║{RED}                  ║
-║{GRN} ██║       ███╔╝  ███████║{RED}                  ║
-║{GRN} ██║      ███╔╝   ██╔══██║{RED}                  ║
-║{GRN} ╚██████╗███████╗ ██║  ██║{RED}                  ║
-║{GRN}  ╚═════╝╚══════╝ ╚═╝  ╚═╝{RED}                  ║
-║{CYN}             C Z H   T O O L S               {RED}║
-╠═══════════════════════════════════════════╣
-║{WHT} [+] STATUS: ARMED // CZH SECURE           {RED}║
-╠═══════════════════════════════════════════╣
-║{YEL} [01]{WHT} DNS LOOKUP      {RED}║{YEL} [05]{WHT} SYS ENVIRONMENT {RED}║
-║{YEL} [02]{WHT} CERT INTEL      {RED}║{YEL} [06]{WHT} NET HEALTH      {RED}║
-║{YEL} [03]{WHT} SEC HEADERS     {RED}║{YEL} [07]{WHT} WHOIS LOOKUP    {RED}║
-║{YEL} [04]{WHT} SHA-256 HASH    {RED}║{YEL} [08]{WHT} PING HOST       {RED}║
-╠═══════════════════════════════════════════╣
-║{RED} [00] ABORT SESSION & EXIT                  {RED}║
-╚═══════════════════════════════════════════╝{RST}""")
-        
-        choice = input("\nSelect option: ").strip()
-        
-        if choice == "1": dns_lookup()
-        elif choice == "2": tls_info()
-        elif choice == "3": security_headers()
-        elif choice == "4": file_hash()
-        elif choice == "5": system_info()
-        elif choice == "6": network_health()
-        elif choice == "7": whois_lookup()
-        elif choice == "8": ping_host()
-        elif choice == "0" or choice == "00":
-            print(f"\n{GRN}CZH Toolkit closed.{RST}")
+        print("""
+[91m╔══════════════════════════════════════════════════════════════════╗
+[91m║ [97m ██████╗██╗  ██╗██╗  ██╗    ████████╗ ██████╗  ██████╗ ██╗     ███████╗
+[91m║ [97m██╔════╝╚██╗██╔╝██║  ██║    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝
+[91m║ [97m██║      ╚███╔╝ ███████║       ██║   ██║   ██║██║   ██║██║     ███████╗
+[91m║ [97m██║      ██╔██╗ ██╔══██║       ██║   ██║   ██║██║   ██║██║     ╚════██║
+[91m║ [97m╚██████╗██╔╝ ██╗██║  ██║       ██║   ╚██████╔╝╚██████╔╝███████╗███████║
+[91m║ [97m ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
+[91m╠══════════════════════════════════════════════════════════════════╣
+[91m║ [92m[+] STATUS: ARMED [91m|| [97mCIPHER ZERO HACKERS [91m|| [92mSECURE[91m              ║
+[91m╠══════════════════════════════════════════════════════════════════╣
+[91m║ [93m[01][97m DNS TARGET RECON       [91m║[93m [04][97m SHA-256 PAYLOAD HASH [91m     ║
+[91m║ [93m[02][97m CERTIFICATE INTEL      [91m║[93m [05][97m SYSTEM ENVIRONMENT   [91m     ║
+[91m║ [93m[03][97m SECURITY HEADERS       [91m║[93m [06][97m NETWORK HEALTH       [91m     ║
+[91m╠══════════════════════════════════════════════════════════════════╣
+[91m║ [91m[00][97m ABORT SESSION & EXIT                                   [91m║
+[91m╚══════════════════════════════════════════════════════════════════╝[0m
+""")
+        choice = input("Select option: ").strip()
+        if choice == "1":
+            dns_lookup()
+        elif choice == "2":
+            tls_info()
+        elif choice == "3":
+            security_headers()
+        elif choice == "4":
+            file_hash()
+        elif choice == "5":
+            system_info()
+        elif choice == "6":
+            network_health()
+        elif choice == "0":
+            print("CZH Toolkit closed.")
             break
         else:
-            print(f"\n{YEL}Invalid option.{RST}")
-        
-        input(f"\n{CYN}Press Enter to return to menu...{RST}")
+            print("Invalid option.")
+        input("\nPress Enter to return to menu...")
 
 if __name__ == "__main__":
     main()
