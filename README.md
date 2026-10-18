@@ -33,9 +33,28 @@ The public development tree includes:
 - HTTPS/TLS certificate checks.
 - HTTP security-header checks.
 - Documentation for tools, labs, and projects.
+- Offline Cyber Academy with 10 structured modules and local progress tracking.
 
 Availability and behavior must be verified against the actual source code.
 Do not assume every feature has passed testing.
+
+## Cyber Academy
+
+CZH includes an offline, terminal-based Cyber Academy with 10 core modules:
+- Termux & Linux
+- Files & Permissions
+- Networking Core
+- HTTPS & TLS
+- SHA-256 Integrity
+- Password Defense
+- Anti-Phishing
+- Device Security
+- Security Headers
+- Backups & Logs
+
+Each module includes a mission brief, key concepts, practice steps, safety notes, and a quick knowledge check (quiz). Learning progress is stored locally on the device and is never uploaded.
+
+Access the Academy from the CZH Mission Control menu by selecting `[06] Cyber Academy`.
 
 ## Requirements
 
