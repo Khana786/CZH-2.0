@@ -65,7 +65,7 @@ banner() {
     printf "  ${X}[03]${R} ${W}System Monitor${R}\n"
     printf "  ${Y}[04]${R} ${W}Member Center${R}\n"
     printf "  ${G}[05]${R} ${W}Core Platform Status${R}\n"
-    printf "  ${C}[06]${R} ${W}Cyber Academy${R}\n"
+    printf "  ${C}[06]${R} ${W}Learning Labs${R}\n"
     printf "  ${P}[07]${R} ${W}Tools Catalog${R}\n"
     printf "  ${Y}[08]${R} ${W}Projects Catalog${R}\n"
     printf "  ${X}[09]${R} ${W}Safe Diagnostic Report${R}\n"
@@ -154,27 +154,6 @@ show_labs() {
     LAB_README="$RELEASE_ROOT/catalog/labs/README.md"
 
     printf "\n${C}=== CZH LEARNING LABS ===${R}\n"
-    printf "\n${G}[A]${R} ${W}CZH Cyber Academy${R}\n"
-    printf "${G}[L]${R} ${W}Practical Cyber Labs (4 labs)${R}\n"
-    printf "${G}[0]${R} ${W}Back to Mission Control${R}\n"
-    printf "${C}Select [A/L/0]: ${R}"
-    local _czh_ac
-    read -r _czh_ac
-    case "$_czh_ac" in
-        a|A)
-            if [ -f "$RELEASE_ROOT/catalog/courses/czh-course.py" ]; then
-                python "$RELEASE_ROOT/catalog/courses/czh-course.py"
-            else
-                printf "${Y}Academy module not found.${R}\n"
-            fi
-            pause
-            return
-            ;;
-        0)
-            return
-            ;;
-    esac
-
 
     if [ -f "$LAB_README" ]; then
         cat "$LAB_README"
