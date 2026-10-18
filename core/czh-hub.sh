@@ -11,9 +11,8 @@ X='\033[38;5;196m'
 W='\033[38;5;255m'
 D='\033[38;5;244m'
 
-# Resolve paths from this CZH installation; allow explicit overrides.
-PLATFORM="${CZH_PLATFORM_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-PRIVATE="${CZH_PRIVATE_ROOT:-$PLATFORM/PrivateData}"
+PLATFORM="$HOME/CZH/Platform-v2"
+PRIVATE="$HOME/CZH/PrivateData"
 
 trap 'printf "\033[0m"' EXIT
 
@@ -65,14 +64,13 @@ banner() {
     printf "  ${X}[03]${R} ${W}System Monitor${R}\n"
     printf "  ${Y}[04]${R} ${W}Member Center${R}\n"
     printf "  ${G}[05]${R} ${W}Core Platform Status${R}\n"
-    printf "  ${C}[06]${R} ${W}Learning Labs${R}\n"
+    printf "  ${C}[06]${R} ${W}Cyber Academy${R}\n"
     printf "  ${P}[07]${R} ${W}Tools Catalog${R}\n"
     printf "  ${Y}[08]${R} ${W}Projects Catalog${R}\n"
     printf "  ${X}[09]${R} ${W}Safe Diagnostic Report${R}\n"
     printf "  ${C}[10]${R} ${W}Activity & Error Center${R}\n"
     printf "  ${G}[11]${R} ${W}CZH Smart Error Doctor${R}\n"
     printf "  ${P}[12]${R} ${W}CZH Admin Center${R}\n"
-    printf "  ${G}[13]${R} ${W}File Integrity Checker${R}\n"
     printf "${D} +%s+${R}\n" "$edge"
     printf "  ${X}[00]${R} ${W}Exit CZH${R}\n"
     printf "${G}%s${R}\n" "$edge"
@@ -148,33 +146,40 @@ show_activity_logs() {
 }
 
 show_labs() {
-    local RELEASE_ROOT LAB_RUNNER LAB_README choice
-    RELEASE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-    LAB_RUNNER="$RELEASE_ROOT/catalog/labs/czh-labs.py"
-    LAB_README="$RELEASE_ROOT/catalog/labs/README.md"
-
     printf "\n${C}=== CZH LEARNING LABS ===${R}\n"
+    printf "\n${G}[A]${R} ${W}CZH Cyber Academy${R}\n"
+    printf "${G}[L]${R} ${W}Practical Cyber Labs (4 labs)${R}\n"
+    printf "${G}[0]${R} ${W}Back to Mission Control${R}\n"
+    printf "${C}Select [A/L/0]: ${R}"
+    local _czh_ac
+    read -r _czh_ac
+    case "$_czh_ac" in
+        a|A)
+            if [ -f "$PLATFORM/catalog/courses/czh-course.py" ]; then
+                python "$PLATFORM/catalog/courses/czh-course.py"
+            else
+                printf "${Y}Academy module not found.${R}\n"
+            fi
+            pause
+            return
+            ;;
+        0)
+            return
+            ;;
+    esac
 
-    if [ -f "$LAB_README" ]; then
-        cat "$LAB_README"
+    if [ -d "$PLATFORM/catalog/labs" ]; then
+        find "$PLATFORM/catalog/labs" -maxdepth 1 -type f -print
+        if [ -f "$PLATFORM/catalog/labs/README.md" ]; then
+            printf "\n"
+            cat "$PLATFORM/catalog/labs/README.md"
+        fi
     else
-        printf "${Y}Learning lab guide not found.${R}\n"
+        printf "${Y}Learning Labs directory not found.${R}\n"
     fi
-
-    if [ -f "$LAB_RUNNER" ]; then
-        printf "\n${G}[READY] Practical lab runner found.${R}\n"
-        printf "Run practical labs now? [y/N]: "
-        read -r choice
-        case "$choice" in
-            y|Y|yes|YES) python "$LAB_RUNNER" ;;
-            *) printf "Returning to CZH Mission Control.\n" ;;
-        esac
-    else
-        printf "\n${Y}Practical lab runner is not installed in this release yet.${R}\n"
-    fi
-
     pause
 }
+
 show_catalog() {
     printf "\n${C}=== %s ===${R}\n" "$2"
     if [ -d "$1" ]; then
