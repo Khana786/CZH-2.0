@@ -109,6 +109,35 @@ def system_info():
     print("Home directory:", Path.home())
     print("This option does not collect or upload device information.")
 
+def network_health():
+    import socket
+    import time
+    print("\n--- Network Health Inspector (read-only) ---")
+    try:
+        hostname = socket.gethostname()
+        print(f"Local hostname: {hostname}")
+    except Exception as e:
+        print(f"Could not get hostname: {e}")
+
+    try:
+        local_ip = socket.gethostbyname(socket.gethostname())
+        print(f"Local IP address: {local_ip}")
+    except Exception as e:
+        print(f"Could not resolve local IP: {e}")
+
+    target = "example.com"
+    print(f"\nTesting DNS resolution for: {target}")
+    try:
+        start = time.time()
+        ip = socket.gethostbyname(target)
+        elapsed = (time.time() - start) * 1000
+        print(f"  [OK] Resolved to {ip} in {elapsed:.1f} ms")
+    except Exception as e:
+        print(f"  [FAIL] DNS resolution failed: {e}")
+
+    print("\nNote: This is a basic local connectivity check.")
+    print("It does not scan networks or test remote ports.")
+
 def main():
     while True:
         print("""
@@ -121,6 +150,7 @@ def main():
 3. HTTPS security headers
 4. File SHA-256 hash
 5. Local environment information
+6. Network health check
 0. Exit
 """)
         choice = input("Select option: ").strip()
@@ -134,6 +164,8 @@ def main():
             file_hash()
         elif choice == "5":
             system_info()
+        elif choice == "6":
+            network_health()
         elif choice == "0":
             print("CZH Toolkit closed.")
             break

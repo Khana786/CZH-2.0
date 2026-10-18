@@ -9,7 +9,7 @@ Status: Project catalog; implementations may be pending.
 
 | ID | Project | Purpose | Status |
 |---|---|---|---|
-| CZH-P01 | Network Health Inspector | Inspect basic network connectivity and local interface information | Planned |
+| CZH-P01 | Network Health Inspector | Inspect basic network connectivity and local interface information | Implemented in `czh-tools` (option 6) |
 | CZH-P02 | DNS & Domain Inspector | Perform DNS lookups and explain the results | Implemented in `czh-tools` (option 1) |
 | CZH-P03 | HTTPS/TLS Inspector | Check certificate validity and HTTPS security headers | Implemented in `czh-tools` (options 2 and 3) |
 | CZH-P04 | File Integrity Checker | Calculate SHA-256 hashes to help detect file changes | Implemented: `czh-integrity` and `czh-tools` (option 4) |
