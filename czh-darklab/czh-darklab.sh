@@ -1,15 +1,16 @@
 #!/data/data/com.termux/files/usr/bin/bash
+source "$HOME/CZH/Platform-v2/config/theme.conf" 2>/dev/null
+R="${COLOR_MAIN:-\033[91m}"
+W="${COLOR_TEXT:-\033[97m}"
+C="${COLOR_ACCENT:-\033[96m}"
+BG_R="${BG_MAIN:-\033[41m}"
 
 KEY_FILE="$HOME/CZH/PrivateData/darkweb.key"
 clear
 
-R='\033[91m'
 G='\033[92m'
 Y='\033[93m'
-C='\033[96m'
-W='\033[97m'
 D='\033[90m'
-BG_R='\033[41m'
 NC='\033[0m'
 
 if [ ! -f "$KEY_FILE" ]; then
@@ -156,7 +157,7 @@ while true; do
             ;;
         5)
             echo -e "${C}\n  [+] CZH ETHICAL TESTING ARSENAL${NC}"
-            echo -e "${Y}  Tools available: whois, dig, curl, wget, nikto, whatweb, msfconsole${NC}"
+            echo -e "${Y}  Tools available: whois, dig, curl, wget, nikto, whatweb, spiderfoot, msfconsole${NC}"
             echo -e "${Y}  Use only on authorized targets.${NC}"
             read -r -p "  Enter tool name (or 'exit' to return): " tool_cmd
             
@@ -179,6 +180,13 @@ while true; do
                     log_action "Used WhatWeb on: $target"
                     echo -e "${C}  [*] Starting WhatWeb Scanner...${NC}"
                     proot-distro login debian -- whatweb "$target"
+                fi
+            elif [[ "$tool_cmd" == "spiderfoot" ]]; then
+                read -r -p "  Enter target Domain/IP for SpiderFoot: " target
+                if [ -n "$target" ]; then
+                    log_action "Used SpiderFoot on: $target"
+                    echo -e "${C}  [*] Starting SpiderFoot OSINT Scan...${NC}"
+                    proot-distro login debian -- bash -c "cd /root/spiderfoot && python3 sf.py -s $target -q"
                 fi
             elif [[ "$tool_cmd" =~ ^(whois|dig|curl|wget)$ ]]; then
                 read -r -p "  Enter target (e.g., example.com): " target
