@@ -1,0 +1,2 @@
+#!/data/data/com.termux/files/usr/bin/bash
+bash "$HOME/CZH/Platform-v2/core/czh-cleaner.sh"
