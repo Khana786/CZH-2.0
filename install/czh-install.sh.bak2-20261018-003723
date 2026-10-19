@@ -1,0 +1,91 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -Eeuo pipefail
+
+SOURCE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DEST="${CZH_INSTALL_DIR:-$HOME/CZH-2.0}"
+
+printf '\n=== CZH 2.0 SAFE INSTALLER ===\n'
+printf 'Source:      %s\n' "$SOURCE_ROOT"
+printf 'Destination: %s\n\n' "$DEST"
+
+if [ "$DEST" = "$HOME" ] || [ "$DEST" = "/" ] || [ "$DEST" = "$SOURCE_ROOT" ]; then
+    echo "ERROR: Unsafe or conflicting destination. Installation cancelled."
+    exit 1
+fi
+
+if [ -e "$DEST" ]; then
+    echo "ERROR: Destination already exists."
+    echo "No files were changed. Choose a new destination with CZH_INSTALL_DIR."
+    exit 1
+fi
+
+for required in core/czh-hub.sh core/czh-core.sh core/czh-monitor.sh \
+                core/czh-doctor.sh core/czh-integrity.py \
+                catalog/tools/czh-tools.py catalog/labs/czh-labs.py \
+                catalog/courses/czh-course.py \
+                catalog/labs/README.md config/platform.conf; do
+    if [ ! -f "$SOURCE_ROOT/$required" ]; then
+        echo "ERROR: Required release file missing: $required"
+        echo "No installation performed."
+        exit 1
+    fi
+done
+
+if ! command -v bash >/dev/null 2>&1 || ! command -v python >/dev/null 2>&1; then
+    echo "ERROR: Bash and Python are required."
+    echo "Install them through Termux package management, then retry."
+    exit 1
+fi
+
+printf 'Install CZH into %s? [y/N]: ' "$DEST"
+read -r answer
+case "$answer" in
+    y|Y|yes|YES) ;;
+    *) echo "Cancelled. No files changed."; exit 0 ;;
+esac
+
+mkdir -p "$(dirname "$DEST")"
+STAGING="${DEST}.staging.$$"
+
+cleanup() {
+    if [ -d "${STAGING:-}" ]; then
+        rm -rf -- "$STAGING"
+    fi
+}
+trap cleanup EXIT
+
+mkdir -m 700 "$STAGING"
+cp -R "$SOURCE_ROOT/." "$STAGING/"
+
+# Do not copy Git metadata, development backups, or local-only data.
+rm -rf "$STAGING/.git"
+find "$STAGING" -type f -name '.czh-*.bak' -delete
+find "$STAGING" -type f -name '*.bak-*' -delete
+find "$STAGING" -type f -name '*.bak' -delete
+find "$STAGING" -type d -name '__pycache__' -prune -exec rm -rf {} +
+
+chmod +x "$STAGING/core/czh-hub.sh" \
+         "$STAGING/core/czh-core.sh" \
+         "$STAGING/core/czh-monitor.sh" \
+         "$STAGING/catalog/labs/czh-labs.py"
+
+bash -n "$STAGING/core/czh-hub.sh"
+bash -n "$STAGING/core/czh-core.sh"
+bash -n "$STAGING/core/czh-monitor.sh"
+python -m py_compile "$STAGING/catalog/labs/czh-labs.py"
+python -m py_compile "$STAGING/catalog/tools/czh-tools.py"
+
+if [ -e "$DEST" ]; then
+    echo "ERROR: Destination appeared during installation; refusing to overwrite."
+    exit 1
+fi
+
+mv "$STAGING" "$DEST"
+STAGING=""
+
+printf '\nCZH files installed at: %s\n' "$DEST"
+printf 'Running Core status verification...\n'
+CZH_PLATFORM_ROOT="$DEST" bash "$DEST/core/czh-core.sh" status
+printf '\nInstallation file checks: PASS\n'
+printf 'Launch Hub with: bash "%s/core/czh-hub.sh"\n' "$DEST"
+printf 'This installer does not configure a backend or install a local AI model.\n'
