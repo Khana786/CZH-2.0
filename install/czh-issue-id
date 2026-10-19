@@ -1,0 +1,49 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+ID_DIR="$HOME/CZH/PrivateData/ID_Profiles"
+mkdir -p "$ID_DIR"
+
+clear
+echo -e "\033[96m  [+] CZH ADMIN - ISSUE VIP ID CARD\033[0m\n"
+
+read -r -p "  Enter Hacker Alias: " alias
+read -r -p "  Enter Real Name: " real_name
+read -r -p "  Enter Role: " role
+
+echo -e "\n  \033[93m[?] Photo Options:\033[0m"
+echo -e "      1. Enter Image URL (e.g., https://example.com/photo.jpg)"
+echo -e "      2. Enter Local File Path (e.g., /sdcard/DCIM/photo.jpg)"
+read -r -p "  Choose [1/2]: " photo_opt
+
+if [ "$photo_opt" == "2" ]; then
+    read -r -p "  Enter Local Image Path: " img_path
+    if [ -f "$img_path" ]; then
+        echo -e "\033[93m  [*] Converting image to Base64...\033[0m"
+        # Using base64 to embed image directly
+        PHOTO_DATA="data:image/jpeg;base64,$(base64 -w 0 "$img_path")"
+    else
+        echo -e "\033[91m  [✗] File not found. Using default avatar.\033[0m"
+        PHOTO_DATA="https://api.dicebear.com/7.x/bottts/svg?seed=$alias&backgroundColor=000000"
+    fi
+else
+    read -r -p "  Enter Image URL: " img_url
+    if [ -n "$img_url" ]; then
+        PHOTO_DATA="$img_url"
+    else
+        PHOTO_DATA="https://api.dicebear.com/7.x/bottts/svg?seed=$alias&backgroundColor=000000"
+    fi
+fi
+
+# Generate JSON Profile
+cat > "$ID_DIR/$alias.json" << EOF
+{
+    "alias": "$alias",
+    "real_name": "$real_name",
+    "role": "$role",
+    "photo": "$PHOTO_DATA"
+}
+EOF
+
+chmod 600 "$ID_DIR/$alias.json"
+echo -e "\n\033[92m  [✓] VIP ID Issued successfully for $alias!\033[0m"
+echo -e "\033[96m  [!] They can now run 'czh-idcard' to download it.\033[0m"

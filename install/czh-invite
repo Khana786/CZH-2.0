@@ -1,0 +1,32 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+clear
+R='\033[91m'; G='\033[92m'; C='\033[96m'; W='\033[97m'; Y='\033[93m'; NC='\033[0m'
+INVITE_FILE="$HOME/CZH/PrivateData/invites.db"
+mkdir -p "$HOME/CZH/PrivateData"
+touch "$INVITE_FILE"
+chmod 600 "$INVITE_FILE"
+
+echo -e "${C}"
+echo -e "  ██╗███╗   ██╗██╗   ██╗██╗████████╗███████╗"
+echo -e "  ██║████╗  ██║██║   ██║██║╚══██╔══╝██╔════╝"
+echo -e "  ██║██╔██╗ ██║██║   ██║██║   ██║   █████╗  "
+echo -e "  ██║██║╚██╗██║╚██╗ ██╔╝██║   ██║   ██╔══╝  "
+echo -e "  ██║██║ ╚████║ ╚████╔╝ ██║   ██║   ███████╗"
+echo -e "  ╚═╝╚═╝  ╚═══╝  ╚═══╝  ╚═╝   ╚═╝   ╚══════╝"
+echo -e "${NC}"
+echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${W}  [+] CZH STEALTH RECRUITMENT SYSTEM${NC}"
+echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+
+read -r -p "$(echo -e "${C}  How many single-use invite codes to generate? [1]: ${NC}")" COUNT
+COUNT=${COUNT:-1}
+
+for ((i=1; i<=COUNT; i++)); do
+    CODE="CZH-ELITE-$(head /dev/urandom | tr -dc A-Z0-9 | head -c 6)"
+    echo "$CODE" >> "$INVITE_FILE"
+    echo -e "\n${G}  [✔] Secret Invite Code $i: ${W}$CODE${NC}"
+done
+
+echo -e "\n${Y}  [!] Give these codes to trusted hackers only. They will expire once used.${NC}"
+read -r -p "  Press Enter to exit..."

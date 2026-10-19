@@ -15,6 +15,17 @@ while true; do
         # Count total pending reports
         CURRENT_COUNT=$(awk -F'|' '$6=="PENDING"{c++} END{print c+0}' "$REPORTS_DB")
         
+        # Check for Academy Completion (10/10)
+        PROGRESS_FILE="$HOME/CZH/PrivateData/course-progress.json"
+        if [ -f "$PROGRESS_FILE" ]; then
+            COMPLETED=$(python3 -c "import json; print(len(json.load(open('$PROGRESS_FILE')).get('completed', [])))" 2>/dev/null || echo 0)
+            if [ "$COMPLETED" -eq 10 ] && [ ! -f "$HOME/CZH/PrivateData/cert_notified.flag" ]; then
+                termux-notification --title "🎓 CZH ALERT" --content "A member has completed 10/10 modules! Issue their ID Card now." --priority high 2>/dev/null
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ALERT: Academy 10/10 Completed." >> "$HOME/CZH/PrivateData/daemon_alerts.log"
+                touch "$HOME/CZH/PrivateData/cert_notified.flag"
+            fi
+        fi
+
         if [ "$CURRENT_COUNT" -gt "$LAST_COUNT" ]; then
             NEW_REPORTS=$((CURRENT_COUNT - LAST_COUNT))
             TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
