@@ -23,6 +23,10 @@ for required in core/czh-hub.sh core/czh-core.sh core/czh-monitor.sh \
                 core/czh-doctor.sh core/czh-integrity.py \
                 catalog/tools/czh-tools.py catalog/labs/czh-labs.py \
                 catalog/courses/czh-course.py \
+                core/czh-admin-center.sh \
+                members/czh-member-center.sh \
+                czh-darklab/czh-darklab.sh \
+                czh-bugfinder/czh-bugfinder.sh \
                 catalog/labs/README.md config/platform.conf; do
     if [ ! -f "$SOURCE_ROOT/$required" ]; then
         echo "ERROR: Required release file missing: $required"
