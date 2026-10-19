@@ -89,7 +89,7 @@ while true; do
         1) run_command czh-status ;;
         2) run_command czh-tools ;;
         3) run_command czh-monitor ;;
-        4) run_command czh-join ;;
+        4) bash "$PLATFORM/members/czh-member-center.sh" ;;
         5) bash "$PLATFORM/core/czh-core.sh" status; pause ;;
         6) bash "$PLATFORM/catalog/courses/czh-course.py" ;;
         7) bash "$PLATFORM/core/czh-catalog.sh" "$PLATFORM/catalog/tools" "CZH TOOLS CATALOG" ;;
@@ -97,7 +97,7 @@ while true; do
         9) bash "$PLATFORM/core/czh-diagnostic.sh" ;;
         10) bash "$PLATFORM/core/czh-activity.sh" ;;
         11) run_command czh-doctor ;;
-        12) run_command czh-admin ;;
+        12) bash "$PLATFORM/core/czh-admin-center.sh" ;;
         13) run_command czh-integrity ;;
         0|00)
             printf "\n${G}CZH SESSION CLOSED — STAY ETHICAL. STAY SECURE.${R}\n"
