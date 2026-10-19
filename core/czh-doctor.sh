@@ -1,100 +1,92 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-set -u
+clear
+R='\033[91m'
+G='\033[92m'
+Y='\033[93m'
+C='\033[96m'
+W='\033[97m'
+D='\033[90m'
+BG_R='\033[41m'
+BG_G='\033[42m'
+NC='\033[0m'
 
-G='\033[1;32m'
-C='\033[1;36m'
-Y='\033[1;33m'
-R='\033[1;31m'
-W='\033[1;37m'
-D='\033[0m'
+# 5-Second Boot Sequence
+for i in {5..1}; do
+    clear
+    echo -e "${R}  ╔══════════════════════════════════════════════╗${NC}"
+    echo -e "${R}  ║ ${W} ☠  C Z H   S Y S T E M   D O C T O R ${R}║${NC}"
+    echo -e "${R}  ╚══════════════════════════════════════════════╝${NC}\n"
+    echo -e "${C}  [ RUNNING DIAGNOSTIC PROTOCOLS... ]${NC}"
+    echo -e "${D}  Scanning for vulnerabilities and anomalies...${NC}\n"
+    echo -e "${Y}  [+] Injection in ${W}$i${Y}...${NC}"
+    sleep 1
+done
+clear
 
-ROOT="$HOME/CZH/Platform-v2"
-CONF="$ROOT/config/platform.conf"
-LOG="$HOME/CZH/PrivateData/reports/activity.log"
+# Compact & Fixed ASCII Art
+echo -e "${C}"
+echo -e "      ██████╗███████╗██╗  ██╗"
+echo -e "     ██╔════╝╚══███╔╝██║  ██║"
+echo -e "     ██║       ███╔╝ ███████║"
+echo -e "     ██║      ███╔╝  ██╔══██║"
+echo -e "     ╚██████╗███████╗██║  ██║"
+echo -e "      ╚═════╝╚══════╝╚═╝  ╚═╝"
+echo -e "${W}         D O C T O R${NC}"
+echo ""
 
-printf "\n%b" "$G"
-printf '%s\n' '================================================'
-printf '%s\n' '              CZH SMART ERROR DOCTOR'
-printf '%s\n' '================================================'
-printf '%b\n' "$D"
-printf '%b\n' "${C}CIPHER ZERO HACKERS | WHITE HAT CYBER LAB${D}"
-printf '%s\n\n' 'Mode: READ-ONLY — no automatic repairs'
+echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BG_G}${W}  [+] DIAGNOSTIC REPORT: READ-ONLY MODE ACTIVE                  ${NC}"
+echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
 
-issues=0
-
-check_dir() {
-    if [ -d "$ROOT/$1" ]; then
-        printf '%b\n' "${G}[OK]${D} Directory: $1"
-    else
-        printf '%b\n' "${R}[MISSING]${D} Directory: $1"
-        issues=$((issues + 1))
-    fi
-}
-
-check_cmd() {
-    if command -v "$1" >/dev/null 2>&1; then
-        printf '%b\n' "${G}[OK]${D} Command: $1"
-    else
-        printf '%b\n' "${R}[MISSING]${D} Command: $1"
-        printf '  Suggestion: check Termux package availability for %s.\n' "$1"
-        issues=$((issues + 1))
-    fi
-}
-
-printf '%b\n' "${C}[1] Platform configuration${D}"
-if [ -r "$CONF" ]; then
-    printf '%b\n' "${G}[OK]${D} platform.conf exists and is readable"
+echo -e "${C}  ┌───[ 1. CONFIGURATION ]────────────────────────────────────┐${NC}"
+if [ -f "$HOME/CZH/Platform-v2/config/platform.conf" ]; then
+    echo -e "  ${G}[ OK ] Platform configuration file is intact.${NC}"
 else
-    printf '%b\n' "${R}[ISSUE]${D} platform.conf missing or unreadable"
-    issues=$((issues + 1))
+    echo -e "  ${R}[FAIL] Platform configuration file missing!${NC}"
 fi
+echo -e "${C}  └────────────────────────────────────────────────────────────┘${NC}\n"
 
-printf '\n%b\n' "${C}[2] Essential directories${D}"
-for d in core config install members ai catalog/tools catalog/labs catalog/projects docs backend; do
-    check_dir "$d"
-done
-
-printf '\n%b\n' "${C}[3] Essential commands${D}"
-for c in bash python git curl; do
-    check_cmd "$c"
-done
-
-printf '\n%b\n' "${C}[4] CZH commands${D}"
-for c in czh-status czh-monitor czh-join czh-assistant czh-tools czh-hub; do
-    if command -v "$c" >/dev/null 2>&1; then
-        printf '%b\n' "${G}[READY]${D} $c"
+echo -e "${C}  ┌───[ 2. ESSENTIAL MODULES ]────────────────────────────────┐${NC}"
+MODULES=("core" "install" "members" "ai" "catalog/tools" "catalog/labs" "catalog/projects")
+for mod in "${MODULES[@]}"; do
+    if [ -d "$HOME/CZH/Platform-v2/$mod" ]; then
+        echo -e "  ${G}[ OK ] Module: \033[97m$mod${NC}"
     else
-        printf '%b\n' "${Y}[NOT FOUND]${D} $c"
-        printf '  Suggestion: inspect the relevant module and Termux PATH before reinstalling.\n'
-        issues=$((issues + 1))
+        echo -e "  ${R}[FAIL] Module missing: \033[97m$mod${NC}"
     fi
 done
+echo -e "${C}  └────────────────────────────────────────────────────────────┘${NC}\n"
 
-printf '\n%b\n' "${C}[5] Recent activity errors${D}"
-if [ -r "$LOG" ]; then
-    if grep -q 'result=ERROR' "$LOG"; then
-        printf '%b\n' "${Y}[NOTICE]${D} Historical ERROR entries exist in the local activity log."
-        printf '%s\n' 'Most recent entries:'
-        tail -n 5 "$LOG"
-        printf '\n%s\n' 'Meaning: an earlier command returned a non-zero exit code.'
-        printf '%s\n' 'This does not prove the module is currently failing.'
-        printf '%s\n' 'Suggestion: rerun the module and inspect its live output if the issue returns.'
+echo -e "${C}  ┌───[ 3. WEAPON SYSTEMS ]───────────────────────────────────┐${NC}"
+CMDS=("bash" "python" "git" "curl" "nmap" "proot-distro")
+for cmd in "${CMDS[@]}"; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+        echo -e "  ${G}[ OK ] Command ready: \033[97m$cmd${NC}"
     else
-        printf '%b\n' "${G}[OK]${D} No ERROR entries found in the activity log."
+        echo -e "  ${Y}[WARN] Command missing: \033[97m$cmd${NC}"
+    fi
+done
+echo -e "${C}  └────────────────────────────────────────────────────────────┘${NC}\n"
+
+echo -e "${C}  ┌───[ 4. ERROR LOGS ]───────────────────────────────────────┐${NC}"
+LOG_FILE="$HOME/CZH/PrivateData/reports/activity.log"
+if [ -f "$LOG_FILE" ]; then
+    ERRORS=$(grep -c "ERROR" "$LOG_FILE")
+    if [ "$ERRORS" -gt 0 ]; then
+        echo -e "  ${Y}[WARN] Detected ${W}$ERRORS${Y} historical errors in activity log.${NC}"
+    else
+        echo -e "  ${G}[ OK ] No errors detected in activity log.${NC}"
     fi
 else
-    printf '%b\n' "${Y}[NOTICE]${D} Activity log not found or unreadable."
+    echo -e "  ${D}[INFO] No activity log found yet.${NC}"
 fi
+echo -e "${C}  └────────────────────────────────────────────────────────────┘${NC}\n"
 
-printf '\n%b\n' "${C}[6] Summary${D}"
-if [ "$issues" -eq 0 ]; then
-    printf '%b\n' "${G}Foundation checks passed.${D}"
-    printf '%s\n' 'This is not a guarantee that every platform feature is complete.'
-else
-    printf '%b\n' "${Y}Found $issues missing item(s) to investigate.${D}"
-    printf '%s\n' 'Review the messages above before attempting any repair.'
-fi
+echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BG_R}${W}  ⚠  SCAN COMPLETE. NO AUTOMATIC REPAIRS MADE.  ⚠               ${NC}"
+echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
 
-printf '\n%s\n' 'Privacy: this report stays on this device; nothing is uploaded.'
-printf '%s\n\n' 'Doctor finished. No repairs or configuration changes were made.'
+read -r -p "  Press Enter to return..."
