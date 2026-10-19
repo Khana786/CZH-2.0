@@ -20,6 +20,7 @@ log_action() {
     printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" >> "$BOUNTY_DIR/bounty_activity.log"
 }
 
+IS_ADMIN="false"
 while true; do
     clear
     echo -e "${R}"
@@ -55,6 +56,9 @@ while true; do
     echo -e "${C}  │${NC} ${Y}[2]${W} SUBMIT A NEW BUG REPORT (FOUND A FLAW?)            ${C}│${NC}"
     echo -e "${C}  │${NC} ${Y}[3]${W} VIEW MY SUBMITTED REPORTS                           ${C}│${NC}"
     echo -e "${C}  │${NC} ${Y}[4]${W} READ BUG BOUNTY RESOURCES                           ${C}│${NC}"
+    if [ "$IS_ADMIN" == "true" ]; then
+        echo -e "${C}  │${NC} ${MAG}[5]${W} ADMIN REVIEW PANEL (Owner Only)                     ${C}│${NC}"
+    fi
     echo -e "${C}  ├──────────────────────────────────────────────────────────┤${NC}"
     echo -e "${C}  │${NC} ${R}[0]${W} ABORT & EXIT BUG FINDER                             ${C}│${NC}"
     echo -e "${C}  └──────────────────────────────────────────────────────────┘${NC}"
@@ -136,6 +140,36 @@ while true; do
             echo -e "${R}  ⚠ Always read the program's scope before testing.${NC}"
             log_action "Viewed Bug Bounty Resources"
             read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+            ;;
+        5)
+            if [ "$IS_ADMIN" == "true" ]; then
+                clear
+                echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+                echo -e "${MAG}${W}  ☠  A D M I N   R E V I E W   P A N E L  ☠  ${NC}"
+                echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+                echo ""
+                if [ -s "$BOUNTY_DIR/reports.txt" ]; then
+                    cat "$BOUNTY_DIR/reports.txt"
+                else
+                    echo -e "${Y}  No reports to review.${NC}"
+                fi
+                echo ""
+                read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+            else
+                echo -e "${R}\n  [✗] ACCESS DENIED. ADMIN ONLY.${NC}"
+                read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+            fi
+            ;;
+        secret_admin_login)
+            read -r -s -p "$(echo -e "${R}  Enter Admin Key: ${NC}")" admin_key
+            echo ""
+            if [ "$admin_key" == "CZH-DARKWEB-QEP5ES" ]; then
+                IS_ADMIN="true"
+                echo -e "${G}  [✓] Admin Access Granted.${NC}"
+            else
+                echo -e "${R}  [✗] Invalid Key.${NC}"
+            fi
+            sleep 1
             ;;
         0)
             echo -e "${R}\n  [!] DISCONNECTING FROM BUG HUNTER MODE. STAY ETHICAL.${NC}"
