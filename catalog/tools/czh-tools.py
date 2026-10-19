@@ -1,182 +1,181 @@
-#!/usr/bin/env python3
-import hashlib
 import os
-import platform
+import sys
 import socket
 import ssl
-import urllib.error
-import urllib.parse
+import hashlib
+import subprocess
 import urllib.request
-from datetime import datetime, timezone
-from pathlib import Path
+import time
 
-def get_host():
-    raw = input("Domain ya hostname: ").strip()
-    if "://" in raw:
-        raw = urllib.parse.urlsplit(raw).hostname or ""
-    raw = raw.split("/")[0].split(":")[0].strip()
-    if not raw or any(c.isspace() for c in raw):
-        print("Invalid hostname.")
-        return None
-    return raw
+# Colors
+R='\033[91m'
+G='\033[92m'
+Y='\033[93m'
+C='\033[96m'
+W='\033[97m'
+D='\033[90m'
+BG_R='\033[41m'
+BG_G='\033[42m'
+NC='\033[0m'
+
+def clear():
+    os.system('clear' if os.name == 'posix' else 'cls')
 
 def dns_lookup():
-    host = get_host()
-    if not host:
-        return
+    host = input(f"\n{Y}  [?] Enter domain for DNS lookup (e.g., example.com): {NC}").strip()
+    if not host: return
     try:
-        results = sorted({item[4][0] for item in socket.getaddrinfo(host, None)})
-        print("\nDNS results:")
-        for ip in results:
-            print(" ", ip)
-    except (socket.gaierror, OSError) as exc:
-        print("DNS error:", exc)
+        print(f"\n{C}  [+] Resolving: {host}{NC}")
+        ip = socket.gethostbyname(host)
+        print(f"{G}  [✔] IPv4 Address: {ip}{NC}")
+    except Exception as e:
+        print(f"{R}  [✗] Could not resolve: {e}{NC}")
 
 def tls_info():
-    host = get_host()
-    if not host:
-        return
+    host = input(f"\n{Y}  [?] Enter domain for TLS check (e.g., example.com): {NC}").strip()
+    if not host: return
     try:
         context = ssl.create_default_context()
-        with socket.create_connection((host, 443), timeout=8) as sock:
-            with context.wrap_socket(sock, server_hostname=host) as tls:
-                cert = tls.getpeercert()
-                print("TLS version:", tls.version())
-                print("Cipher:", tls.cipher()[0] if tls.cipher() else "Unknown")
-                print("Certificate subject:", cert.get("subject", "Unknown"))
-                print("Certificate issuer:", cert.get("issuer", "Unknown"))
-                expiry = cert.get("notAfter")
-                print("Certificate expires:", expiry or "Unknown")
-                if expiry:
-                    exp = datetime.strptime(
-                        expiry, "%b %d %H:%M:%S %Y %Z"
-                    ).replace(tzinfo=timezone.utc)
-                    days = (exp - datetime.now(timezone.utc)).days
-                    print("Days until expiry:", days)
-    except (OSError, ssl.SSLError, ValueError) as exc:
-        print("TLS check failed:", exc)
+        with socket.create_connection((host, 443), timeout=5) as sock:
+            with context.wrap_socket(sock, server_hostname=host) as ssock:
+                cert = ssock.getpeercert()
+                print(f"\n{C}  [+] TLS Info for: {host}{NC}")
+                print(f"{G}  [✔] Protocol: {ssock.version()}{NC}")
+                print(f"{G}  [✔] Issuer: {dict(x[0] for x in cert['issuer'])['commonName']}{NC}")
+                print(f"{G}  [✔] Expires: {cert['notAfter']}{NC}")
+    except Exception as e:
+        print(f"{R}  [✗] Connection error: {e}{NC}")
 
 def security_headers():
-    raw = input("Full HTTPS URL (only check sites you are allowed to test): ").strip()
-    parsed = urllib.parse.urlsplit(raw)
-    if parsed.scheme != "https" or not parsed.hostname:
-        print("Please provide a valid HTTPS URL.")
-        return
-    request = urllib.request.Request(
-        raw, method="GET", headers={"User-Agent": "CZH-Ethical-Lab/1.0"}
-    )
+    url = input(f"\n{Y}  [?] Enter URL for headers (e.g., https://example.com): {NC}").strip()
+    if not url: return
+    if not url.startswith("http"): url = "https://" + url
     try:
-        with urllib.request.urlopen(request, timeout=10) as response:
-            print("HTTP status:", response.status)
-            print("Final URL:", response.geturl())
-            headers = response.headers
-            wanted = [
-                "Strict-Transport-Security",
-                "Content-Security-Policy",
-                "X-Content-Type-Options",
-                "X-Frame-Options",
-                "Referrer-Policy",
-                "Permissions-Policy",
-            ]
-            print("\nSecurity header review:")
-            for name in wanted:
-                print(f"{name}: {headers.get(name, 'NOT PRESENT')}")
-            print("\nNote: missing headers alone do not prove a vulnerability.")
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
-        print("HTTP check failed:", exc)
+        req = urllib.request.Request(url, method="HEAD", headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            print(f"\n{C}  [+] Headers for: {url}{NC}")
+            for h in ["Server", "X-Frame-Options", "Strict-Transport-Security", "Content-Security-Policy"]:
+                val = resp.headers.get(h, "Missing")
+                print(f"{G}  [✔] {h}: {val}{NC}")
+    except Exception as e:
+        print(f"{R}  [✗] {e}{NC}")
 
 def file_hash():
-    raw = input("File path: ").strip()
-    path = Path(os.path.expanduser(raw))
-    if not path.is_file():
-        print("File not found.")
+    path = input(f"\n{Y}  [?] Enter file path for SHA-256 (e.g., ~/test.txt): {NC}").strip()
+    path = os.path.expanduser(path)
+    if not os.path.isfile(path):
+        print(f"{R}  [✗] File not found.{NC}")
         return
-    digest = hashlib.sha256()
     try:
-        with path.open("rb") as file:
-            for chunk in iter(lambda: file.read(1024 * 1024), b""):
-                digest.update(chunk)
-        print("File:", path)
-        print("SHA-256:", digest.hexdigest())
-    except OSError as exc:
-        print("File read error:", exc)
+        sha = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""): sha.update(chunk)
+        print(f"\n{C}  [+] SHA-256 Hash for: {path}{NC}")
+        print(f"{G}  [✔] {sha.hexdigest()}{NC}")
+    except Exception as e:
+        print(f"{R}  [✗] {e}{NC}")
 
 def system_info():
-    print("Platform:", platform.platform())
-    print("Python:", platform.python_version())
-    print("Machine:", platform.machine())
-    print("Termux PREFIX:", os.environ.get("PREFIX", "Not detected"))
-    print("Home directory:", Path.home())
-    print("This option does not collect or upload device information.")
+    print(f"\n{C}  [+] System Environment Info{NC}")
+    print(f"{G}  [✔] Platform: {sys.platform}{NC}")
+    print(f"{G}  [✔] Python: {sys.version.split()[0]}{NC}")
+    print(f"{G}  [✔] Home: {os.path.expanduser('~')}{NC}")
 
 def network_health():
-    import socket
-    import time
-    print("\n--- Network Health Inspector (read-only) ---")
+    print(f"\n{C}  [+] Network Health Inspector{NC}")
     try:
-        hostname = socket.gethostname()
-        print(f"Local hostname: {hostname}")
-    except Exception as e:
-        print(f"Could not get hostname: {e}")
-
+        ip = socket.gethostbyname(socket.gethostname())
+        print(f"{G}  [✔] Local IP: {ip}{NC}")
+    except:
+        print(f"{Y}  [!] Local IP hidden{NC}")
     try:
-        local_ip = socket.gethostbyname(socket.gethostname())
-        print(f"Local IP address: {local_ip}")
-    except Exception as e:
-        print(f"Could not resolve local IP: {e}")
+        socket.gethostbyname("example.com")
+        print(f"{G}  [✔] DNS Reachability: ONLINE{NC}")
+    except:
+        print(f"{R}  [✗] DNS Reachability: OFFLINE{NC}")
 
-    target = "example.com"
-    print(f"\nTesting DNS resolution for: {target}")
+def whois_lookup():
+    dom = input(f"\n{Y}  [?] Enter domain for WHOIS: {NC}").strip()
+    if not dom: return
+    print(f"\n{C}  [+] WHOIS Lookup: {dom}{NC}")
     try:
-        start = time.time()
-        ip = socket.gethostbyname(target)
-        elapsed = (time.time() - start) * 1000
-        print(f"  [OK] Resolved to {ip} in {elapsed:.1f} ms")
+        res = subprocess.run(["whois", dom], capture_output=True, text=True, timeout=10)
+        print(res.stdout[:1000] + "\n... (truncated)")
+    except FileNotFoundError:
+        print(f"{R}  [✗] 'whois' not installed. Run: pkg install whois{NC}")
     except Exception as e:
-        print(f"  [FAIL] DNS resolution failed: {e}")
+        print(f"{R}  [✗] {e}{NC}")
 
-    print("\nNote: This is a basic local connectivity check.")
-    print("It does not scan networks or test remote ports.")
+def ping_host():
+    host = input(f"\n{Y}  [?] Enter host to ping: {NC}").strip()
+    if not host: return
+    print(f"\n{C}  [+] Pinging: {host}{NC}")
+    try:
+        res = subprocess.run(["ping", "-c", "4", host], capture_output=True, text=True, timeout=15)
+        if res.returncode == 0:
+            print(res.stdout)
+        else:
+            print(f"{R}  [✗] Host unreachable.{NC}")
+    except Exception as e:
+        print(f"{R}  [✗] {e}{NC}")
 
 def main():
     while True:
-        print("""
-[91m╔══════════════════════════════════════════════════════════════════╗
-[91m║ [97m ██████╗██╗  ██╗██╗  ██╗    ████████╗ ██████╗  ██████╗ ██╗     ███████╗
-[91m║ [97m██╔════╝╚██╗██╔╝██║  ██║    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝
-[91m║ [97m██║      ╚███╔╝ ███████║       ██║   ██║   ██║██║   ██║██║     ███████╗
-[91m║ [97m██║      ██╔██╗ ██╔══██║       ██║   ██║   ██║██║   ██║██║     ╚════██║
-[91m║ [97m╚██████╗██╔╝ ██╗██║  ██║       ██║   ╚██████╔╝╚██████╔╝███████╗███████║
-[91m║ [97m ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-[91m╠══════════════════════════════════════════════════════════════════╣
-[91m║ [92m[+] STATUS: ARMED [91m|| [97mCIPHER ZERO HACKERS [91m|| [92mSECURE[91m              ║
-[91m╠══════════════════════════════════════════════════════════════════╣
-[91m║ [93m[01][97m DNS TARGET RECON       [91m║[93m [04][97m SHA-256 PAYLOAD HASH [91m     ║
-[91m║ [93m[02][97m CERTIFICATE INTEL      [91m║[93m [05][97m SYSTEM ENVIRONMENT   [91m     ║
-[91m║ [93m[03][97m SECURITY HEADERS       [91m║[93m [06][97m NETWORK HEALTH       [91m     ║
-[91m╠══════════════════════════════════════════════════════════════════╣
-[91m║ [91m[00][97m ABORT SESSION & EXIT                                   [91m║
-[91m╚══════════════════════════════════════════════════════════════════╝[0m
-""")
-        choice = input("Select option: ").strip()
-        if choice == "1":
-            dns_lookup()
-        elif choice == "2":
-            tls_info()
-        elif choice == "3":
-            security_headers()
-        elif choice == "4":
-            file_hash()
-        elif choice == "5":
-            system_info()
-        elif choice == "6":
-            network_health()
-        elif choice == "0":
-            print("CZH Toolkit closed.")
+        clear()
+        
+        # Perfect CZH Logo
+        print(f"{R}")
+        print("      ██████╗███████╗██╗  ██╗")
+        print("     ██╔════╝╚══███╔╝██║  ██║")
+        print("     ██║       ███╔╝ ███████║")
+        print("     ██║      ███╔╝  ██╔══██║")
+        print("     ╚██████╗███████╗██║  ██║")
+        print("      ╚═════╝╚══════╝╚═╝  ╚═╝")
+        print(f"{W}         T O O L S{NC}\n")
+        
+        # Danger Borders
+        print(f"{R}  ╔════════════════════════════════════════════╗{NC}")
+        print(f"{BG_R}{W}  ║  ☠  S T A T U S :   A R M E D  ☠          ║{NC}")
+        print(f"{R}  ╚════════════════════════════════════════════╝{NC}\n")
+        
+        # Single Column Menu
+        print(f"{C}  ┌────────────────────────────────────────────┐{NC}")
+        print(f"  {C}│{NC} {Y}[01]{W} DNS Lookup                             {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[02]{W} Certificate Information                {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[03]{W} Security Headers                       {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[04]{W} File SHA-256 Hash                      {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[05]{W} System Environment                     {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[06]{W} Network Health                         {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[07]{W} WHOIS Lookup                           {C}│{NC}")
+        print(f"  {C}│{NC} {Y}[08]{W} Ping Host                              {C}│{NC}")
+        print(f"{C}  ├────────────────────────────────────────────┤{NC}")
+        print(f"  {C}│{NC} {R}[00]{W} ABORT SESSION & EXIT                   {C}│{NC}")
+        print(f"{C}  └────────────────────────────────────────────┘{NC}\n")
+        
+        # Warning Footer
+        print(f"{R}  ╔════════════════════════════════════════════╗{NC}")
+        print(f"{BG_G}{W}  ║  [+] MONITORING ACTIVE // CZH SECURE       ║{NC}")
+        print(f"{R}  ╚════════════════════════════════════════════╝{NC}\n")
+
+        choice = input(f"{R}  CZH-TOOLS ➜ {NC}").strip()
+        
+        if choice == "1": dns_lookup()
+        elif choice == "2": tls_info()
+        elif choice == "3": security_headers()
+        elif choice == "4": file_hash()
+        elif choice == "5": system_info()
+        elif choice == "6": network_health()
+        elif choice == "7": whois_lookup()
+        elif choice == "8": ping_host()
+        elif choice in ["0", "00"]:
+            print(f"\n{G}  [✔] CZH Toolkit closed. Stay Ethical.{NC}")
             break
         else:
-            print("Invalid option.")
-        input("\nPress Enter to return to menu...")
+            print(f"\n{R}  [✗] Invalid option.{NC}")
+            time.sleep(1)
+            continue
+        
+        input(f"\n{C}  Press Enter to return to menu...{NC}")
 
 if __name__ == "__main__":
     main()
