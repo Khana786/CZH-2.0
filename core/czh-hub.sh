@@ -73,7 +73,7 @@ banner() {
     echo -e "${C}  │${NC} ${Y}[03]${W} System Monitor     ${C}│${NC} ${Y}[10]${W} Activity & Errors  ${C}│${NC}"
     echo -e "${C}  │${NC} ${Y}[04]${W} Member Center      ${C}│${NC} ${Y}[11]${W} Smart Error Doctor ${C}│${NC}"
     echo -e "${C}  │${NC} ${Y}[05]${W} Core Status        ${C}│${NC} ${Y}[12]${W} Admin Center       ${C}│${NC}"
-    echo -e "${C}  │${NC} ${Y}[06]${W} Cyber Academy      ${C}│${NC} ${Y}[13]${W} File Integrity     ${C}│${NC}"
+    echo -e "${C}  │${NC} ${Y}[06]${W} CZH BLACKSITE      ${C}│${NC} ${Y}[13]${W} File Integrity     ${C}│${NC}"
     echo -e "${C}  │${NC} ${Y}[07]${W} Tools Catalog      ${C}│${NC} ${R}[00]${W} ABORT & EXIT       ${C}│${NC}"
     echo -e "${C}  └─────────────────────────────┴─────────────────────────────┘${NC}"
     echo ""
