@@ -23,6 +23,8 @@ for required in core/czh-hub.sh core/czh-core.sh core/czh-monitor.sh \
                 core/czh-doctor.sh core/czh-integrity.py \
                 catalog/tools/czh-tools.py catalog/labs/czh-labs.py \
                 catalog/courses/czh-course.py \
+                core/czh-daemon.sh core/czh-web.py core/czh-catalog.sh \
+                core/czh-diagnostic.sh core/czh-activity.sh \
                 core/czh-admin-center.sh \
                 members/czh-member-center.sh \
                 czh-darklab/czh-darklab.sh \

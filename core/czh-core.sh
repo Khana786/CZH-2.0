@@ -40,7 +40,7 @@ echo -e "${R}  ╚════════════════════�
 # Identity Section
 echo -e "${C}  ┌───[ C O R E   I D E N T I T Y ]──────────────────────────────────┐${NC}"
 echo -e "  ${W}▶ Platform Name : ${G}CZH LAB${NC}"
-echo -e "  ${W}▶ Build Version : ${G}2.0.0-dev${NC}"
+echo -e "  ${W}▶ Build Version : ${G}2.0.0${NC}"
 echo -e "  ${W}▶ Root Directory: ${D}$PLATFORM${NC}"
 echo -e "  ${W}▶ Security Mode : ${Y}WHITE HAT / ETHICAL${NC}"
 echo -e "${C}  └──────────────────────────────────────────────────────────────────┘${NC}\n"
