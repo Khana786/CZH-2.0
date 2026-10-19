@@ -75,17 +75,63 @@ while true; do
             echo -e "${R}  ╔══════════════════════════════════════════════════════════════════╗${NC}"
             echo -e "${BG_R}${W}  ║  ☠  R E G I S T E R   N E W   M E M B E R  ☠                    ║${NC}"
             echo -e "${R}  ╚══════════════════════════════════════════════════════════════════╝${NC}\n"
-            read -r -p "$(echo -e "${Y}  Choose Hacker Alias: ${NC}")" alias
-            read -r -p "$(echo -e "${Y}  Real Name (Optional): ${NC}")" real_name
-            read -r -p "$(echo -e "${Y}  Role (e.g., Pentester, Learner): ${NC}")" role
             
+            INVITE_FILE="$HOME/CZH/PrivateData/invites.db"
+            touch "$INVITE_FILE"
+            chmod 600 "$INVITE_FILE"
+
+            # Step 1: Invite Code Check
+            read -r -p "$(echo -e "${R}  Enter Secret Invite Code: ${NC}")" inv_code
+            
+            if ! grep -qxF "$inv_code" "$INVITE_FILE" || [ -z "$inv_code" ]; then
+                echo -e "\n${R}  [✗] ACCESS DENIED. Invalid or used Invite Code.${NC}"
+                echo -e "${Y}  Contact Admin (AARHIV HACKERS) for an invite.${NC}"
+                read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+                continue
+            fi
+            
+            echo -e "\n${G}  [✔] Invite Code Accepted!${NC}"
+            sleep 1
+            clear
+            
+            # Step 2: Elite Oath
+            echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${BG_R}${W}  ☠  C Z H   E L I T E   H A C K E R   O A T H  ☠  ${NC}"
+            echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+            
+            echo -e "${W}  1. I will only use my skills for White Hat / Ethical purposes.${NC}"
+            echo -e "${W}  2. I will NEVER attack a system without explicit permission.${NC}"
+            echo -e "${W}  3. I will keep CZH tools and data strictly confidential.${NC}"
+            echo -e "${W}  4. I am here to learn, secure, and defend.${NC}\n"
+            
+            read -r -p "$(echo -e "${Y}  Type 'I AGREE' to proceed: ${NC}")" oath
+            
+            if [[ "$oath" != "I AGREE" && "$oath" != "i agree" ]]; then
+                echo -e "\n${R}  [✗] Oath not accepted. Registration aborted.${NC}"
+                read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+                continue
+            fi
+            
+            clear
+            echo -e "${G}  [✔] Oath Accepted. You may now choose your identity.${NC}\n"
+            
+            # Step 3: Registration Details
+            read -r -p "$(echo -e "${Y}  Choose Hacker Alias: ${NC}")" alias
             if grep -q "^$alias:" "$MEMBER_DIR/members.db"; then
                 echo -e "\n${R}  [✗] Alias already exists! Choose another.${NC}"
             else
+                read -r -p "$(echo -e "${Y}  Real Name (Optional): ${NC}")" real_name
+                read -r -p "$(echo -e "${Y}  Role (e.g., Pentester, Learner): ${NC}")" role
+                
                 DATE=$(date '+%Y-%m-%d')
                 echo "$alias:$real_name:$role:$DATE:0" >> "$MEMBER_DIR/members.db"
-                log_action "New member registered: $alias"
-                echo -e "\n${G}  [✓] Welcome to CZH, $alias! Registration successful.${NC}"
+                
+                # Remove used invite code (Single-use)
+                grep -vxF "$inv_code" "$INVITE_FILE" > "${INVITE_FILE}.tmp" && mv "${INVITE_FILE}.tmp" "$INVITE_FILE"
+                
+                log_action "New member registered via Invite+Oath: $alias"
+                echo -e "\n${G}  [✓] WELCOME TO THE ELITE CZH TEAM, $alias!${NC}"
+                echo -e "${C}  Your journey begins now. Stay Ethical.${NC}"
             fi
             read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
             ;;
