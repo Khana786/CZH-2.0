@@ -92,7 +92,7 @@ while true; do
     echo -e "${C}  │${NC} ${G}[2]${W} Dark Lab Logs        ${C}│${NC} ${G}[7]${W} Bug Reports           ${C}│${NC}"
     echo -e "${C}  │${NC} ${G}[3]${W} Member Reg. Logs     ${C}│${NC} ${G}[8]${W} System Diagnostics    ${C}│${NC}"
     echo -e "${C}  │${NC} ${G}[4]${W} Clear All Logs       ${C}│${NC} ${Y}[9]${W} CZH Roadmap & Updates${C}│${NC}"
-    echo -e "${C}  │${NC} ${G}[5]${W} SYSTEM UPDATE        ${C}│${NC} ${Y}[B]${W} BUG BOUNTY STATS      ${C}│${NC}"
+    echo -e "${C}  │${NC} ${G}[5]${W} SYSTEM UPDATE        ${C}│${NC} ${Y}[B]${W} BOUNTY STATS        ${C}│${NC}"
     echo -e "${C}  ├─────────────────────────────┴─────────────────────────────┤${NC}"
     echo -e "${C}  │${NC} ${R}[L]${W} LOCK ADMIN PANEL (SECURITY)                            ${C}│${NC}"
     echo -e "${C}  └──────────────────────────────────────────────────────────┘${NC}"
