@@ -94,6 +94,8 @@ while true; do
     echo -e "${C}  │${NC} ${G}[4]${W} Clear All Logs       ${C}│${NC} ${Y}[9]${W} CZH Roadmap & Updates${C}│${NC}"
     echo -e "${C}  │${NC} ${G}[5]${W} SYSTEM UPDATE        ${C}│${NC} ${Y}[B]${W} BOUNTY STATS        ${C}│${NC}"
     echo -e "${C}  ├─────────────────────────────┴─────────────────────────────┤${NC}"
+    echo -e "${C}  │${NC} ${R}[D]${W} DAEMON ALERTS (Auto-Monitor)                           ${C}│${NC}"
+    echo -e "${C}  ├──────────────────────────────────────────────────────────┤${NC}"
     echo -e "${C}  │${NC} ${R}[L]${W} LOCK ADMIN PANEL (SECURITY)                            ${C}│${NC}"
     echo -e "${C}  └──────────────────────────────────────────────────────────┘${NC}"
     echo ""
@@ -133,6 +135,20 @@ while true; do
                 awk -F'|' '$6=="ACCEPTED" {printf "  - ID: %s | Alias: %s | Severity: %s\n", $1, $2, $5}' "$REPORTS_DB" | tail -n 5
             else
                 echo -e "${Y}  No Bug Reports found yet.${NC}"
+            fi
+            read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+            ;;
+        D|d)
+            clear
+            echo -e "${B}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${BG_B}${W}  👑  A U T O - D A E M O N   A L E R T S  👑  ${NC}"
+            echo -e "${B}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+            
+            DAEMON_LOG="$HOME/CZH/PrivateData/daemon_alerts.log"
+            if [ -f "$DAEMON_LOG" ] && [ -s "$DAEMON_LOG" ]; then
+                cat "$DAEMON_LOG"
+            else
+                echo -e "${Y}  No alerts logged yet. Daemon is monitoring in background.${NC}"
             fi
             read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
             ;;
