@@ -92,7 +92,7 @@ while true; do
     echo -e "${C}  │${NC} ${G}[2]${W} Dark Lab Logs        ${C}│${NC} ${G}[7]${W} Bug Reports           ${C}│${NC}"
     echo -e "${C}  │${NC} ${G}[3]${W} Member Reg. Logs     ${C}│${NC} ${G}[8]${W} System Diagnostics    ${C}│${NC}"
     echo -e "${C}  │${NC} ${G}[4]${W} Clear All Logs       ${C}│${NC} ${Y}[9]${W} CZH Roadmap & Updates${C}│${NC}"
-    echo -e "${C}  │${NC} ${G}[5]${W} SYSTEM UPDATE        ${C}│${NC} ${R}[0]${W} Exit Admin Panel      ${C}│${NC}"
+    echo -e "${C}  │${NC} ${G}[5]${W} SYSTEM UPDATE        ${C}│${NC} ${Y}[B]${W} BUG BOUNTY STATS      ${C}│${NC}"
     echo -e "${C}  ├─────────────────────────────┴─────────────────────────────┤${NC}"
     echo -e "${C}  │${NC} ${R}[L]${W} LOCK ADMIN PANEL (SECURITY)                            ${C}│${NC}"
     echo -e "${C}  └──────────────────────────────────────────────────────────┘${NC}"
@@ -111,6 +111,31 @@ while true; do
         7) clear; echo -e "${W}  === BUG REPORTS ===${NC}"; cat "$HOME/CZH/PrivateData/BugBounty/reports.txt" 2>/dev/null | tail -n 20; read -r -p "  Press Enter..." ;;
         8) clear; echo -e "${W}  === DIAGNOSTICS ===${NC}"; df -h "$HOME" | tail -n 1; echo -e "  Members: $(wc -l < "$HOME/CZH/PrivateData/Members/members.db" 2>/dev/null || echo 0)"; read -r -p "  Press Enter..." ;;
         9) clear; echo -e "${Y}  === CZH ROADMAP & NEW FEATURES ===${NC}"; cat "$ROADMAP_FILE"; echo ""; read -r -p "  Add new feature to roadmap (or 'exit'): " new_feat; if [[ "$new_feat" != "exit" && -n "$new_feat" ]]; then echo "[ ] $new_feat" >> "$ROADMAP_FILE"; echo -e "${G}  [✓] Added!"; fi; read -r -p "  Press Enter..." ;;
+        B|b)
+            clear
+            echo -e "${B}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${BG_B}${W}  👑  B U G   B O U N T Y   S T A T S  👑  ${NC}"
+            echo -e "${B}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+            
+            REPORTS_DB="$HOME/CZH/PrivateData/BugBounty/reports.db"
+            if [ -f "$REPORTS_DB" ] && [ -s "$REPORTS_DB" ]; then
+                TOTAL=$(wc -l < "$REPORTS_DB" | tr -d ' ')
+                PENDING=$(awk -F'|' '$6=="PENDING"{c++} END{print c+0}' "$REPORTS_DB")
+                ACCEPTED=$(awk -F'|' '$6=="ACCEPTED"{c++} END{print c+0}' "$REPORTS_DB")
+                REJECTED=$(awk -F'|' '$6=="REJECTED"{c++} END{print c+0}' "$REPORTS_DB")
+                
+                echo -e "${W}  Total Reports : ${G}$TOTAL${NC}"
+                echo -e "${W}  Pending       : ${Y}$PENDING${NC}"
+                echo -e "${W}  Accepted      : ${G}$ACCEPTED${NC}"
+                echo -e "${W}  Rejected      : ${R}$REJECTED${NC}\n"
+                
+                echo -e "${C}  [ Recent Accepted Reports ]${NC}"
+                awk -F'|' '$6=="ACCEPTED" {printf "  - ID: %s | Alias: %s | Severity: %s\n", $1, $2, $5}' "$REPORTS_DB" | tail -n 5
+            else
+                echo -e "${Y}  No Bug Reports found yet.${NC}"
+            fi
+            read -r -p "$(echo -e "${C}  Press Enter to return...${NC}")"
+            ;;
         L|l) echo -e "${R}\n  [✗] ADMIN PANEL LOCKED. Exiting...${NC}"; sleep 1; exit 0 ;;
         0) echo -e "${B}\n  [!] DISCONNECTING. STAY ETHICAL.${NC}"; exit 0 ;;
         *) echo -e "${R}\n  [✗] INVALID OPTION.${NC}"; sleep 1 ;;
