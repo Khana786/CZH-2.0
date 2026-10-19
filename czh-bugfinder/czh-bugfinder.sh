@@ -64,7 +64,7 @@ while true; do
     echo -e "${C}  │${NC} ${R}[0]${W} ABORT & EXIT BUG FINDER                             ${C}│${NC}"
     echo -e "${C}  └──────────────────────────────────────────────────────────┘${NC}\n"
     
-    echo -e "${D}  [ SESSION MONITORED BY AARHIV HACKERS ]${NC}\n"
+    echo -e "${D}  [ SESSION MONITORED BY CZH CYBER TEAM ]${NC}\n"
     
     read -r -p "$(echo -e "${R}  BUG HUNTER ➜ ${NC}")" choice
 

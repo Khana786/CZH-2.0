@@ -77,7 +77,7 @@ class CZHDashboardHandler(http.server.SimpleHTTPRequestHandler):
             {reports_html if reports_html else "<tr><td colspan='5'>No reports found.</td></tr>"}
         </table>
         
-        <div class="header-status">[ SESSION MONITORED BY AARHIV HACKERS ]</div>
+        <div class="header-status">[ SESSION MONITORED BY CZH CYBER TEAM ]</div>
     </div>
 </body>
 </html>"""

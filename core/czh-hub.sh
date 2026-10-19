@@ -59,7 +59,7 @@ banner() {
     echo -e "${C}  └─────────────────────────────┴─────────────────────────────┘${NC}\n"
     
     echo -e "${R}  ╔══════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${D}  ║  [ SESSION MONITORED BY AARHIV HACKERS ]                         ║${NC}"
+    echo -e "${D}  ║  [ SESSION MONITORED BY CZH CYBER TEAM ]                         ║${NC}"
     echo -e "${R}  ╚══════════════════════════════════════════════════════════════════╝${NC}\n"
     printf " ${G}${B}CZH${R}${C}@TERMUX${R} ${G}➜ ${Y}"
 }

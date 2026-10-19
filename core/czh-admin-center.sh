@@ -84,7 +84,7 @@ while true; do
     echo -e "${B}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     
-    echo -e "${BG_G}${W}  [+] SYSTEM STATUS: ALL MODULES ONLINE // AARHIV HACKERS       ${NC}"
+    echo -e "${BG_G}${W}  [+] SYSTEM STATUS: ALL MODULES ONLINE // CZH CYBER TEAM       ${NC}"
     echo ""
     
     echo -e "${C}  ┌─────────────────────────────┬─────────────────────────────┐${NC}"

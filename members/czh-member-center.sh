@@ -65,7 +65,7 @@ while true; do
         echo -e "  ${D}No members registered yet.${NC}"
     fi
     echo ""
-    echo -e "${D}  [ SESSION MONITORED BY AARHIV HACKERS ]${NC}"
+    echo -e "${D}  [ SESSION MONITORED BY CZH CYBER TEAM ]${NC}"
     echo ""
     read -r -p "$(echo -e "${R}  MEMBER ➜ ${NC}")" choice
 

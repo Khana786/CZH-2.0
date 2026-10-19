@@ -104,7 +104,7 @@ echo -e "${C}  └────────────────────�
 echo ""
 
 echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BG_R}${W}  ⚠  WARNING: ALL ACTIONS ARE LOGGED BY AARHIV HACKERS  ⚠       ${NC}"
+echo -e "${BG_R}${W}  ⚠  WARNING: ALL ACTIONS ARE LOGGED BY CZH CYBER TEAM  ⚠       ${NC}"
 echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
