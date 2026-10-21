@@ -5,7 +5,6 @@ while true; do
     R='\033[91m'; W='\033[97m'; C='\033[96m'; G='\033[92m'; Y='\033[93m'; D='\033[90m'; BG_R='\033[41m'; BG_G='\033[42m'; NC='\033[0m'
     
     echo -e "${C}"
-    echo -e "${C}"
     echo -e "      ██████╗███████╗██╗  ██╗"
     echo -e "     ██╔════╝╚══███╔╝██║  ██║"
     echo -e "     ██║       ███╔╝ ███████║"
@@ -14,9 +13,9 @@ while true; do
     echo -e "      ╚═════╝╚══════╝╚═╝  ╚═╝"
     echo -e "${W}        A R S E N A L${NC}"
     echo -e "${NC}"
-    echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BG_R}${W}    ☠  C Z H   A R S E N A L   -   M A S T E R  ☠  ${NC}"
-    echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+    echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BG_R}${W}  ☠  C Z H   A R S E N A L   -   M A S T E R  ☠  ${NC}"
+    echo -e "${R}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 
     echo -e "${BG_G}${W}  [+] CORE SYSTEM                                                      ${NC}"
     echo -e "${C}  ┌─────────────────────────────┬─────────────────────────────┐${NC}"
@@ -30,6 +29,8 @@ while true; do
     echo -e "  ${C}│${NC} ${Y}[07]${W} CYBER TOOLKIT        ${C}│${NC} ${Y}[08]${W} DARK LAB            ${C}│${NC}"
     echo -e "  ${C}│${NC} ${Y}[09]${W} EXPLOIT DATABASE     ${C}│${NC} ${Y}[10]${W} PASSWORD CRACKER    ${C}│${NC}"
     echo -e "  ${C}│${NC} ${Y}[11]${W} NETWORK SCANNER      ${C}│${NC} ${Y}[12]${W} SPY-FI WIFI         ${C}│${NC}"
+    echo -e "  ${C}│${NC} ${Y}[13]${W} MINI-CTF ARENA       ${C}│${NC} ${Y}[14]${W} HARDENING AUDIT     ${C}│${NC}"
+    echo -e "  ${C}│${NC} ${Y}[15]${W} MALWARE SANDBOX      ${C}│${NC} ${D}[--]${W} -------------       ${C}│${NC}"
     echo -e "${C}  └─────────────────────────────┴─────────────────────────────┘${NC}\n"
 
     echo -e "${BG_G}${W}  [+] OSINT & RECON                                                    ${NC}"
@@ -50,6 +51,7 @@ while true; do
     echo -e "${C}  ┌─────────────────────────────┬─────────────────────────────┐${NC}"
     echo -e "  ${C}│${NC} ${Y}[28]${W} PASSWORD VAULT       ${C}│${NC} ${Y}[29]${W} BACKUP SYSTEM       ${C}│${NC}"
     echo -e "  ${C}│${NC} ${Y}[30]${W} AUTO-DAEMON          ${C}│${NC} ${Y}[31]${W} INVITE GENERATOR    ${C}│${NC}"
+    echo -e "  ${C}│${NC} ${Y}[32]${W} AUTO-UPDATER         ${C}│${NC} ${D}[--]${W} -------------       ${C}│${NC}"
     echo -e "${C}  └─────────────────────────────┴─────────────────────────────┘${NC}\n"
 
     echo -e "${R}  ┌──────────────────────────────────────────────────────────┐${NC}"
@@ -88,8 +90,9 @@ while true; do
         27) python3 "$HOME/CZH/Platform-v2/core/czh-idcard.py" ;;
         28) bash "$HOME/CZH/Platform-v2/core/czh-vault.sh" ;;
         29) bash "$HOME/CZH/Platform-v2/core/czh-backup.sh" ;;
-        30) read -r -p "  Start or Stop Daemon? (s/t): " d_choice; if [ "$d_choice" == "s" ]; then czh-daemon; else czh-daemon stop; fi; sleep 1 ;;
+        30) read -r -p "  Start or Stop Daemon? [s/t]: " d_choice; if [ "$d_choice" == "s" ]; then czh-daemon; else czh-daemon stop; fi; sleep 1 ;;
         31) czh-invite ;;
+        32) czh-update ;;
         0|00) echo -e "\n${G}  [✓] CZH Arsenal closed. Stay Ethical.${NC}"; exit 0 ;;
         *) echo -e "${R}  [✗] Invalid option.${NC}"; sleep 1 ;;
     esac
