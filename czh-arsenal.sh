@@ -52,7 +52,9 @@ while true; do
     echo -e "  ${C}│${NC} ${Y}[28]${W} PASSWORD VAULT       ${C}│${NC} ${Y}[29]${W} BACKUP SYSTEM       ${C}│${NC}"
     echo -e "  ${C}│${NC} ${Y}[30]${W} AUTO-DAEMON          ${C}│${NC} ${Y}[31]${W} INVITE GENERATOR    ${C}│${NC}"
     echo -e "  ${C}│${NC} ${Y}[32]${W} AUTO-UPDATER         ${C}│${NC} ${Y}[33]${W} URL SCANNER         ${C}│${NC}
-    echo -e "${C}  │${NC} ${Y}[34]${W} HASH GENERATOR       ${C}│${NC} ${Y}[35]${W} FAKE DATA GEN       ${C}│${NC}"
+    echo -e "${C}  │${NC} ${Y}[34]${W} HASH GENERATOR       ${C}│${NC} ${Y}[35]${W} FAKE DATA GEN       ${C}│${NC}
+    echo -e "${C}  │${NC} ${Y}[36]${W} RANSOMWARE SIM       ${C}│${NC} ${Y}[37]${W} PANIC BUTTON (HIDE) ${C}│${NC}
+
     echo -e "${C}  └─────────────────────────────┴─────────────────────────────┘${NC}\n"
 
     echo -e "${R}  ┌──────────────────────────────────────────────────────────┐${NC}"
@@ -97,6 +99,10 @@ while true; do
         33) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-urlscan.py" ;;
         34) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-hash.py" ;;
         35) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-fakedata.py" ;;
+        36) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-ransom.py" ;;
+        37) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-panic.py" ;;
+        38) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-hijack.py" ;;
+        38) python3 "$HOME/CZH/Platform-v2/catalog/tools/czh-hijack.py" ;;
         0|00) echo -e "\n${G}  [✓] CZH Arsenal closed. Stay Ethical.${NC}"; exit 0 ;;
         *) echo -e "${R}  [✗] Invalid option.${NC}"; sleep 1 ;;
     esac
